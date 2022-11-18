@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Gardener.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Ground.tres" type="Material" id=2]
+[ext_resource path="res://Seed.tscn" type="PackedScene" id=3]
 
 [sub_resource type="PhysicsMaterial" id=3]
 resource_name = "Rasen"
@@ -31,10 +32,13 @@ skeleton = NodePath("")
 transform = Transform( 1, 0, 0, 0, 0.885491, 0.464657, 0, -0.464657, 0.885491, -6.61998, 21.2918, -9.38279 )
 shadow_enabled = true
 
-[node name="Gardener" parent="DirectionalLight" instance=ExtResource( 1 )]
-transform = Transform( -1, 0, -8.74226e-08, 0, 0.999999, -2.98023e-08, 8.74228e-08, 0, -0.999998, 6.64098, -19.6562, -2.26713 )
-collision_layer = 2
-
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 2.6505, 3.2669 )
 fov = 81.0254
+
+[node name="Gardener" parent="." instance=ExtResource( 1 )]
+transform = Transform( -1, 0, -8.74226e-08, 4.06216e-08, 0.88549, -0.464656, 7.74121e-08, -0.464656, -0.885489, 0.0209999, 2.83298, -2.25692 )
+collision_layer = 2
+
+[node name="Seed" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.74799, 3.14126, -5.39029 )
