@@ -45,5 +45,6 @@ collision_layer = 2
 
 [node name="Seed" parent="." instance=ExtResource( 3 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.74799, 3.14126, -5.39029 )
+visible = false
 
 [connection signal="spawned_seed" from="Gardener" to="." method="_on_Gardener_spawned_seed"]

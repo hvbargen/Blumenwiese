@@ -60,7 +60,7 @@ func handle_input(delta):
 	direction2d.y = - (direction.z)
 	direction2d = direction2d.normalized()
 
-	var velocity2d: Vector2
+	var velocity2d = Vector2.ZERO
 	velocity2d.x = velocity.x
 	velocity2d.y = - (velocity.z)
 

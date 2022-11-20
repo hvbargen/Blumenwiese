@@ -3,9 +3,12 @@
 [ext_resource path="res://Seed.gd" type="Script" id=1]
 
 [sub_resource type="SpatialMaterial" id=1]
-albedo_color = Color( 0.929412, 0.639216, 0.0235294, 1 )
+flags_transparent = true
+albedo_color = Color( 0.929412, 0.623529, 0.0235294, 0.756863 )
 metallic = 1.0
 roughness = 0.33
+transmission_enabled = true
+transmission = Color( 0, 0, 0, 1 )
 
 [sub_resource type="CapsuleMesh" id=2]
 
