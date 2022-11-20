@@ -12,6 +12,8 @@ export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
 
+signal spawned_seed
+
 var direction = Vector3.FORWARD
 var velocity = Vector3.ZERO
 var running = false
@@ -98,6 +100,7 @@ func handle_input(delta):
 	velocity.z = - (velocity2d.y)
 	if jump and on_floor:
 		velocity.y = jump_accel * delta
+		emit_signal("spawned_seed")
 	else:
 		velocity.y -= gravity * delta
 	velocity = move_and_slide(velocity, Vector3.UP)
