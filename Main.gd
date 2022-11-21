@@ -6,9 +6,9 @@ extends Node
 # var b = "text"
 
 export (PackedScene) var seed_scene
+export (PackedScene) var flower_scene
 
 const Logger = preload("Logger.gd")
-
 var logger:= Logger.new("Main", Logger.Level.DEBUG)
 
 # Called when the node enters the scene tree for the first time.
@@ -33,3 +33,7 @@ func _on_Gardener_spawned_seed():
 
 func _on_Seed_seed_sunken(where, color):
 	logger.debug("Seed sunken at %s, color is %s", where, color)
+	var new_flower = flower_scene.instance()
+	new_flower.initialize(where, color)
+	add_child(new_flower)
+	
