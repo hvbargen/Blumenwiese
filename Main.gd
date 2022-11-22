@@ -36,4 +36,5 @@ func _on_Seed_seed_sunken(where, color):
 	var new_flower = flower_scene.instance()
 	new_flower.initialize(where, color)
 	add_child(new_flower)
+	new_flower.begin_growing()
 	

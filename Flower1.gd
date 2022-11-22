@@ -16,10 +16,14 @@ func initialize(position: Vector3, color: Color):
 	self.color = color
 	logger.debug("Initialized flower at %s", transform.origin)
 	
+func begin_growing():
+	var anim = get_node("AnimationPlayer")
+	anim.play("YoungGrow")
+	logger.debug("AnimationPlayer %s started animation" % anim.get_instance_id())
+	
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	get_node("AnimationPlayer").play("YoungGrow")
-	logger.debug("Started animation")
+	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

@@ -34,7 +34,7 @@ mesh = SubResource( 2 )
 skeleton = NodePath("")
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.885491, 0.464657, 0, -0.464657, 0.885491, -6.61998, 21.2918, -9.38279 )
+transform = Transform( 0.866025, -0.232328, 0.442746, 0, 0.885491, 0.464657, -0.5, -0.402405, 0.766858, -8, 5, -9.383 )
 shadow_enabled = true
 
 [node name="Camera" type="Camera" parent="."]
