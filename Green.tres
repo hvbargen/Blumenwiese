@@ -1,0 +1,13 @@
+[gd_resource type="SpatialMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://Leaf1.tres" type="Material" id=1]
+
+[resource]
+next_pass = ExtResource( 1 )
+params_cull_mode = 2
+albedo_color = Color( 0.117647, 0.682353, 0.113725, 1 )
+roughness = 0.68
+normal_enabled = true
+normal_scale = 1.0
+transmission_enabled = true
+transmission = Color( 0, 0, 0, 1 )

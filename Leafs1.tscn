@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://Blattkranz.gd" type="Script" id=1]
+[ext_resource path="res://GreenLeafShader.tres" type="Material" id=2]
+
+[sub_resource type="QuadMesh" id=3]
+material = ExtResource( 2 )
+
+[sub_resource type="CylinderMesh" id=4]
+
+[sub_resource type="SpatialMaterial" id=5]
+albedo_color = Color( 0.1512, 0.63, 0.1512, 1 )
+roughness = 0.8
+
+[sub_resource type="MultiMesh" id=6]
+transform_format = 1
+instance_count = 5
+mesh = SubResource( 3 )
+transform_array = PoolVector3Array( 0, -0.671608, -0.740907, 1, 0, 0, 0, -0.740907, 0.671608, -0.0323586, 0.365221, -0.0380711, 0.427955, -0.9038, 0, 0, 0, -1, 0.9038, 0.427955, 0, -0.0457395, 0.00535736, 0.0200969, -0.941742, 0.336337, 0, 0, 0, -1, -0.336337, -0.941742, 0, 0.0166575, 0.321299, -0.0470798, 0, -0.998803, 0.0489213, 1, 0, 0, 0, 0.0489213, 0.998803, -0.0499125, 0.137383, 0.00178621, 0, 0.740907, 0.671608, 1, 0, 0, 0, 0.671608, -0.740907, 0.0359657, 0.261972, 0.0346813 )
+
+[node name="Leafs1" type="Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0227097, 0 )
+
+[node name="Leaf_1" type="Spatial" parent="."]
+
+[node name="BlattMesh" type="MeshInstance" parent="Leaf_1"]
+transform = Transform( 0.3, 0, 0, 0, 0.5, 0.259808, 0, -0.866026, 0.15, 0, 0.256, -0.44 )
+visible = false
+layers = 8
+mesh = SubResource( 3 )
+skeleton = NodePath("")
+
+[node name="Stiel" type="MeshInstance" parent="."]
+transform = Transform( 0.05, 0, 0, 0, 0.2, 0, 0, 0, 0.05, 0, 0.195164, 0 )
+mesh = SubResource( 4 )
+material/0 = SubResource( 5 )
+
+[node name="Blattkranz" type="MultiMeshInstance" parent="."]
+layers = 8
+multimesh = SubResource( 6 )
+script = ExtResource( 1 )
