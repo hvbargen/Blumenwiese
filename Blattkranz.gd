@@ -1,8 +1,12 @@
-extends MultiMeshInstance
+tool extends MultiMeshInstance
 
-export var anzahl = 5
-export var laenge = 3
-export var winkel = PI/4
+export var anzahl: int = 1
+export var laenge: float = 1.0
+export var breite: float = 0.3
+export var rnd_deg: float = 5.0
+export var rnd_rot_deg: float = 90.0
+
+export(float, -60,70) var winkel_deg = 45.0 
 
 var blatt_mesh: MeshInstance
 
@@ -12,11 +16,22 @@ func _ready():
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	blatt_mesh = $"../Leaf_1/BlattMesh"
 	multimesh.mesh = blatt_mesh.mesh.duplicate() # FIXME Warum ist duplicate notwendig?
-	var blatt_transform: Transform = blatt_mesh.transform
+	# var blatt_transform: Transform = blatt_mesh.transform
+	
+	# Randomness
+	var r1 = rand_range(-rnd_deg, rnd_deg)
+	var r2 = rand_range(-rnd_rot_deg, rnd_rot_deg) * PI / 180.0
+	
+	var blatt_transform: Transform = Transform.IDENTITY
+	blatt_transform = blatt_transform.translated(Vector3(0, 0.5, 0))
+	blatt_transform = blatt_transform.scaled(Vector3(breite, laenge, breite))
+	blatt_transform = blatt_transform.rotated(Vector3.RIGHT, - (winkel_deg + r1) * PI / 180.0)
+		
 	multimesh.instance_count = anzahl
+	
 	for i in  range(anzahl):
 		var t1: Transform = Transform.IDENTITY
-		t1 = t1.rotated(Vector3.UP, i * 2 * PI / anzahl).translated(Vector3(0, 0.3, 0))
+		t1 = t1.rotated(Vector3.UP, i * 2 * PI / anzahl + r2).translated(Vector3(0, 0.3, 0))
 		# TODO Rotation
 		var t2: Transform = t1 * blatt_transform
 		print("t1=",t1, " t2=", t2)
@@ -26,3 +41,7 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+
+func _on_Blattkranz_visibility_changed():
+	_ready()
