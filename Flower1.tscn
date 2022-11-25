@@ -1,6 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Flower1.gd" type="Script" id=1]
+[ext_resource path="res://Blossom.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Leafs1.tscn" type="PackedScene" id=3]
 
 [sub_resource type="CylinderShape" id=6]
 margin = 0.01
@@ -24,7 +26,7 @@ albedo_color = Color( 0.117647, 0.682353, 0.113725, 1 )
 [sub_resource type="Animation" id=7]
 length = 0.001
 tracks/0/type = "value"
-tracks/0/path = NodePath("Wurzel/MeshInstance:mesh:height")
+tracks/0/path = NodePath("Wurzel/Stiel:mesh:height")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
@@ -36,7 +38,7 @@ tracks/0/keys = {
 "values": [ 0.3 ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("Wurzel/MeshInstance:mesh:top_radius")
+tracks/1/path = NodePath("Wurzel/Stiel:mesh:top_radius")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/imported = false
@@ -48,7 +50,7 @@ tracks/1/keys = {
 "values": [ 0.02 ]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("Wurzel/MeshInstance:mesh:bottom_radius")
+tracks/2/path = NodePath("Wurzel/Stiel:mesh:bottom_radius")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/imported = false
@@ -76,7 +78,7 @@ tracks/3/keys = {
 resource_name = "YoungGrow"
 length = 3.0
 tracks/0/type = "value"
-tracks/0/path = NodePath("Wurzel/MeshInstance:mesh:height")
+tracks/0/path = NodePath("Wurzel/Stiel:mesh:height")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
@@ -88,7 +90,7 @@ tracks/0/keys = {
 "values": [ 0.2, 2.0 ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath("Wurzel/MeshInstance:mesh:top_radius")
+tracks/1/path = NodePath("Wurzel/Stiel:mesh:top_radius")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/imported = false
@@ -100,7 +102,7 @@ tracks/1/keys = {
 "values": [ 0.0, 0.0, 0.04 ]
 }
 tracks/2/type = "value"
-tracks/2/path = NodePath("Wurzel/MeshInstance:mesh:bottom_radius")
+tracks/2/path = NodePath("Wurzel/Stiel:mesh:bottom_radius")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/imported = false
@@ -123,9 +125,28 @@ tracks/3/keys = {
 "update": 0,
 "values": [ Vector3( 0, 0, 0 ), Vector3( 0, 1, 0 ) ]
 }
+tracks/4/type = "method"
+tracks/4/path = NodePath(".")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 1.5, 3 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [ 0.5 ],
+"method": "spawn_leafs"
+}, {
+"args": [ 1.0 ],
+"method": "spawn_blossom"
+} ]
+}
 
 [node name="Flower1" type="Spatial"]
 script = ExtResource( 1 )
+blossom_scene = ExtResource( 2 )
+leaf_scene = ExtResource( 3 )
 
 [node name="Wurzel" type="StaticBody" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0916205, 0 )
@@ -135,7 +156,7 @@ collision_mask = 0
 [node name="CollisionShape" type="CollisionShape" parent="Wurzel"]
 shape = SubResource( 6 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Wurzel"]
+[node name="Stiel" type="MeshInstance" parent="Wurzel"]
 mesh = SubResource( 1 )
 skin = SubResource( 2 )
 material/0 = SubResource( 3 )

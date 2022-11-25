@@ -2,6 +2,8 @@
 
 [ext_resource path="res://Blattkranz.gd" type="Script" id=1]
 [ext_resource path="res://GreenLeafShader.tres" type="Material" id=2]
+[ext_resource path="res://OurWorldEnv.tres" type="Environment" id=3]
+[ext_resource path="res://Leafs1.gd" type="Script" id=4]
 
 [sub_resource type="QuadMesh" id=3]
 material = ExtResource( 2 )
@@ -12,28 +14,18 @@ material = ExtResource( 2 )
 albedo_color = Color( 0.1512, 0.63, 0.1512, 1 )
 roughness = 0.8
 
-[sub_resource type="QuadMesh" id=10]
+[sub_resource type="QuadMesh" id=6]
 material = ExtResource( 2 )
 
-[sub_resource type="MultiMesh" id=11]
+[sub_resource type="MultiMesh" id=7]
 transform_format = 1
-instance_count = 6
-mesh = SubResource( 10 )
-transform_array = PoolVector3Array( 0.299316, -0.0629063, 0.00733146, 0, 0.36212, 0.27964, -0.020246, -0.930007, 0.108388, -0.0314532, 0.48106, -0.465003, 0.132125, -0.836862, 0.0975327, 0, 0.36212, 0.27964, -0.269338, -0.410525, 0.0478449, -0.418431, 0.48106, -0.205262, -0.167192, -0.773956, 0.0902012, 0, 0.36212, 0.27964, -0.249092, 0.519482, -0.0605433, -0.386978, 0.48106, 0.259741, -0.299316, 0.0629063, -0.00733146, 0, 0.36212, 0.27964, 0.020246, 0.930007, -0.108388, 0.0314532, 0.48106, 0.465003, -0.132124, 0.836863, -0.0975327, 0, 0.36212, 0.27964, 0.269338, 0.410525, -0.0478449, 0.418431, 0.48106, 0.205262, 0.167192, 0.773956, -0.0902012, 0, 0.36212, 0.27964, 0.249092, -0.519482, 0.0605433, 0.386978, 0.48106, -0.259741 )
-
-[sub_resource type="ProceduralSky" id=8]
-sky_top_color = Color( 0.411765, 0.733333, 0.945098, 1 )
-sun_latitude = 38.13
-sun_longitude = -37.57
-sun_energy = 1.5
-
-[sub_resource type="Environment" id=9]
-background_mode = 2
-background_sky = SubResource( 8 )
-background_color = Color( 0.0352941, 0.505882, 0.486275, 1 )
+instance_count = 5
+mesh = SubResource( 6 )
+transform_array = PoolVector3Array( 0.199544, -0.684882, 0.0892555, 0, 0.398437, 0.275159, -0.224014, -0.610069, 0.0795057, -0.342441, 0.499219, -0.305035, -0.151387, -0.79185, 0.103196, 0, 0.398437, 0.275159, -0.259002, 0.46284, -0.0603184, -0.395925, 0.499219, 0.23142, -0.293106, 0.195492, -0.0254769, 0, 0.398437, 0.275159, 0.0639422, 0.89612, -0.116785, 0.0977458, 0.499219, 0.44806, -0.0297622, 0.912671, -0.118942, 0, 0.398437, 0.275159, 0.29852, 0.0909927, -0.0118584, 0.456335, 0.499219, 0.0454963, 0.274712, 0.36857, -0.0480329, 0, 0.398437, 0.275159, 0.120553, -0.839883, 0.109456, 0.184285, 0.499219, -0.419942 )
 
 [node name="Leafs1" type="Spatial"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0227097, 0 )
+script = ExtResource( 4 )
 
 [node name="Leaf_1" type="Spatial" parent="."]
 
@@ -43,6 +35,9 @@ visible = false
 layers = 8
 mesh = SubResource( 3 )
 skeleton = NodePath("")
+__meta__ = {
+"_editor_description_": "Ein einzelnes Blatt, eliipsenförmig"
+}
 
 [node name="Stiel" type="MeshInstance" parent="."]
 transform = Transform( 0.05, 0, 0, 0, 0.2, 0, 0, 0, 0.05, 0, 0.195164, 0 )
@@ -51,14 +46,16 @@ material/0 = SubResource( 5 )
 
 [node name="Blattkranz" type="MultiMeshInstance" parent="."]
 layers = 8
-multimesh = SubResource( 11 )
+multimesh = SubResource( 7 )
 script = ExtResource( 1 )
-anzahl = 6
-rnd_rot_deg = 180.0
-winkel_deg = 70.0
+__meta__ = {
+"_editor_description_": "Ein Kranz aus Blättern, weitgehend konfigurierbar"
+}
+anzahl = 5
+winkel_deg = 70.593
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 9 )
+environment = ExtResource( 3 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="WorldEnvironment"]
 transform = Transform( 0.404682, 0.597639, -0.692142, -0.301652, 0.801765, 0.515925, 0.863272, 1.28638e-08, 0.504739, -5, 4, 0 )
@@ -68,5 +65,7 @@ shadow_enabled = true
 
 [node name="Camera" type="Camera" parent="WorldEnvironment"]
 transform = Transform( 1, 0, 0, 0, 0.955957, 0.293506, 0, -0.293506, 0.955957, -0.375911, 1.40957, 1.64954 )
+
+[node name="Tween" type="Tween" parent="."]
 
 [connection signal="visibility_changed" from="Blattkranz" to="Blattkranz" method="_on_Blattkranz_visibility_changed"]

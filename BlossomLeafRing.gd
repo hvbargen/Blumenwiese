@@ -14,7 +14,7 @@ var blatt_mesh: MeshInstance
 func _ready():
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	blatt_mesh = $"../Leaf_1/BlattMesh"
+	blatt_mesh = $"..//BlossomMesh"
 	multimesh.mesh = blatt_mesh.mesh.duplicate() # FIXME Warum ist duplicate notwendig?
 	# var blatt_transform: Transform = blatt_mesh.transform
 	

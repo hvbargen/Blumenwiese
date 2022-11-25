@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://BlossomLeafShader.tres" type="Material" id=1]
+[ext_resource path="res://OurWorldEnv.tres" type="Environment" id=2]
+[ext_resource path="res://BlossomRing.gd" type="Script" id=3]
+[ext_resource path="res://Blossom.gd" type="Script" id=4]
+
+[sub_resource type="QuadMesh" id=1]
+material = ExtResource( 1 )
+
+[sub_resource type="QuadMesh" id=2]
+material = ExtResource( 1 )
+
+[sub_resource type="MultiMesh" id=3]
+transform_format = 1
+instance_count = 4
+mesh = SubResource( 2 )
+transform_array = PoolVector3Array( 0.230125, 0.62172, -0.0474817, 0, 0.246703, 0.290727, 0.192465, -0.743372, 0.0567725, 0.31086, 0.123352, -0.371686, 0.192465, -0.743372, 0.0567725, 0, 0.246703, 0.290727, -0.230125, -0.62172, 0.0474817, -0.371686, 0.123352, -0.31086, -0.230125, -0.62172, 0.0474817, 0, 0.246703, 0.290727, -0.192465, 0.743372, -0.0567725, -0.31086, 0.123352, 0.371686, -0.192465, 0.743372, -0.0567725, 0, 0.246703, 0.290727, 0.230125, 0.621719, -0.0474817, 0.371686, 0.123352, 0.31086 )
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 4 )
+
+[node name="Blossom" type="Spatial" parent="."]
+
+[node name="BlossomMesh" type="MeshInstance" parent="Blossom"]
+transform = Transform( 0.3, 0, 0, 0, 0.5, 0.259808, 0, -0.866026, 0.15, 0, 0.256, -0.44 )
+visible = false
+layers = 8
+mesh = SubResource( 1 )
+skeleton = NodePath("")
+__meta__ = {
+"_editor_description_": "Ein einzelnes Blatt, eliipsenförmig"
+}
+
+[node name="BlossomLeafRing" type="MultiMeshInstance" parent="Blossom"]
+layers = 8
+multimesh = SubResource( 3 )
+script = ExtResource( 3 )
+__meta__ = {
+"_editor_description_": "Ein Kranz aus Blättern, weitgehend konfigurierbar"
+}
+anzahl = 4
+winkel_deg = 80.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Blossom"]
+environment = ExtResource( 2 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="Blossom/WorldEnvironment"]
+transform = Transform( 0.404682, 0.597639, -0.692142, -0.301652, 0.801765, 0.515925, 0.863272, 1.28638e-08, 0.504739, -5, 4, 0 )
+visible = false
+light_color = Color( 0.964706, 0.960784, 0.862745, 1 )
+shadow_enabled = true
+
+[node name="Camera" type="Camera" parent="Blossom/WorldEnvironment"]
+transform = Transform( 1, 0, 0, 0, 0.955957, 0.293506, 0, -0.293506, 0.955957, -0.375911, 1.40957, 1.64954 )
+
+[node name="Tween" type="Tween" parent="."]
+
+[connection signal="visibility_changed" from="Blossom/BlossomLeafRing" to="Blossom/BlossomLeafRing" method="_on_BlossomLeafRing_visibility_changed"]

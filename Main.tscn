@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Gardener.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Ground.tres" type="Material" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://Main.gd" type="Script" id=4]
 [ext_resource path="res://Flower1.tscn" type="PackedScene" id=5]
 [ext_resource path="res://Leafs1.tscn" type="PackedScene" id=6]
+[ext_resource path="res://Blossom.tscn" type="PackedScene" id=7]
 
 [sub_resource type="PhysicsMaterial" id=3]
 resource_name = "Rasen"
@@ -23,6 +24,7 @@ flower_scene = ExtResource( 5 )
 
 [node name="Ground" type="StaticBody" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0 )
+visible = false
 collision_mask = 0
 physics_material_override = SubResource( 3 )
 
@@ -50,5 +52,13 @@ collision_layer = 2
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.55254, 0, 0.532307 )
 
 [node name="Leafs1" parent="Testpflanze" instance=ExtResource( 6 )]
+
+[node name="Blüte" parent="Testpflanze" instance=ExtResource( 7 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+
+[node name="Testflower" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0 )
+
+[node name="Flower" parent="Testflower" instance=ExtResource( 5 )]
 
 [connection signal="spawned_seed" from="Gardener" to="." method="_on_Gardener_spawned_seed"]
