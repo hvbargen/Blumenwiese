@@ -24,7 +24,6 @@ flower_scene = ExtResource( 5 )
 
 [node name="Ground" type="StaticBody" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0 )
-visible = false
 collision_mask = 0
 physics_material_override = SubResource( 3 )
 
