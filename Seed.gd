@@ -32,14 +32,18 @@ func _ready():
 	self.apply_torque_impulse(torque)
 	var impulse = Vector3.ZERO
 	impulse.x = rand_range(-1.0, 1.0)
-	impulse.y = rand_range(0.5, 2)
+	impulse.y = rand_range(0.5, 1.7)
 	impulse.z = rand_range(-1.0, 1.0)
 	self.apply_central_impulse(impulse)
 	
 	# Choose a random color
 	var mesh : MeshInstance = get_node("MeshInstance")
 	var material = mesh.material_override.duplicate() as SpatialMaterial
-	var color = Color(randf(), randf(), randf(), 0.2 + 0.6 * randf())
+	var hue: float = randf()
+	# Avoid greenish colors
+	while hue > 0.23 and hue < 0.47:
+		hue = randf()
+	var color = Color.from_hsv(hue, rand_range(0.8, 1), rand_range(0.8, 1), rand_range(0.2, 0.8))
 	material.albedo_color = color
 	mesh.material_override = material
 

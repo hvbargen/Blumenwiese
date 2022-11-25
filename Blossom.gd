@@ -25,11 +25,11 @@ func initialize(position: Vector3, color: Color, anzahl: int, winkel: float):
 	var blr = $Blossom/BlossomLeafRing
 	blr.anzahl = anzahl
 	blr.winkel_deg = winkel
+	blr.breite = rand_range(0.3, 0.9)
 	self.translate(position)
 	var bl = $Blossom/BlossomMesh
 	var mesh: Mesh  = bl.mesh
 	var mat: ShaderMaterial = mesh.surface_get_material(0).duplicate()
-	var current_color = mat.get_shader_param("albedo")
 	mat.set_shader_param("albedo", color)
 	mat.set_shader_param("transmission", color.darkened(0.3))
 	
