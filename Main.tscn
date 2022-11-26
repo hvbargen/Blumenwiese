@@ -44,7 +44,7 @@ transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 2.6505, 
 fov = 81.0254
 
 [node name="Gardener" parent="." instance=ExtResource( 1 )]
-transform = Transform( -1, 0, -8.74226e-08, 4.06216e-08, 0.88549, -0.464656, 7.74121e-08, -0.464656, -0.885489, 0.0209999, 2.83298, -2.25692 )
+transform = Transform( 1, 0, 0, 0, 0.999999, 0, 0, 0, 0.999998, 0.0209999, 1.43313, -2.25692 )
 collision_layer = 2
 
 [node name="Testpflanze" type="Spatial" parent="."]

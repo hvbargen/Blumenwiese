@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=2]
+[gd_scene load_steps=32 format=2]
 
 [ext_resource path="res://Material.material" type="Material" id=1]
 [ext_resource path="res://Material_002.material" type="Material" id=2]
@@ -112,6 +112,13 @@ surfaces/0 = {
 "skeleton_aabb": [ AABB( 0, 0, 0, -1, -1, -1 ), AABB( -0.257242, 0.674347, -0.206662, 0.520526, 0.298958, 0.475218 ), AABB( -0.257242, 0.674347, -0.206662, 0.520526, 0.298958, 0.475218 ), AABB( -0.211688, 0.761388, -0.103221, 0.466799, 0.253101, 0.237059 ), AABB( -0.0622842, 0.837629, -0.0349461, 0.130611, 0.17686, 0.136653 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( -0.161584, 0.674347, -0.206662, 0.413623, 0.298958, 0.475218 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( -0.249068, 0.674347, -0.206662, 0.416694, 0.298958, 0.475218 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0.185536, 0.68345, -0.107154, 0.0777478, 0.168803, 0.250473 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( -0.257242, 0.68345, -0.107154, 0.0777478, 0.168803, 0.250473 ) ],
 "vertex_count": 654
 }
+
+[sub_resource type="SpatialMaterial" id=27]
+albedo_color = Color( 0.862745, 0.0156863, 0.772549, 1 )
+metallic = 1.0
+clearcoat_enabled = true
+clearcoat = 1.0
+clearcoat_gloss = 0.78
 
 [sub_resource type="ArrayMesh" id=4]
 resource_name = "3DGodotRobot_Cube003"
@@ -3739,6 +3746,8 @@ tracks/24/imported = false
 tracks/24/enabled = true
 tracks/24/keys = PoolRealArray( 0, 1, -1.47e-10, -0.0206704, 0.000616562, -0.112805, -0.694377, 0.133567, 0.698051, 1, 1, 1, 0.0416667, 1, -1.47e-10, -0.0206704, 0.000616562, -0.112805, -0.694377, 0.133567, 0.698051, 1, 1, 1 )
 
+[sub_resource type="SphereMesh" id=28]
+
 [sub_resource type="CapsuleShape" id=26]
 radius = 0.855937
 height = 0.002
@@ -3889,6 +3898,7 @@ skin = SubResource( 2 )
 [node name="Chest" type="MeshInstance" parent="Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton"]
 mesh = SubResource( 3 )
 skin = SubResource( 2 )
+material/0 = SubResource( 27 )
 
 [node name="Face" type="MeshInstance" parent="Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton"]
 mesh = SubResource( 4 )
@@ -3899,6 +3909,7 @@ mesh = SubResource( 5 )
 skin = SubResource( 2 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Pivot/Spatial/3DGodotRobot"]
+autoplay = "Emote1"
 anims/Attack1 = SubResource( 6 )
 anims/Crouch = SubResource( 7 )
 anims/Dive = SubResource( 8 )
@@ -3920,6 +3931,15 @@ anims/T-pose = SubResource( 23 )
 anims/WallJump = SubResource( 24 )
 anims/WallSlide = SubResource( 25 )
 
+[node name="ForwardIndicator" type="CSGMesh" parent="Pivot/Spatial"]
+transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.7, 1 )
+visible = false
+lod_max_distance = 10.0
+mesh = SubResource( 28 )
+
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.031077, 0.99898, 0, -0.405663, -0.0173479, 0, 0.870002, -0.000712223 )
 shape = SubResource( 26 )
+
+[connection signal="animation_finished" from="Pivot/Spatial/3DGodotRobot/AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
+[connection signal="animation_started" from="Pivot/Spatial/3DGodotRobot/AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]

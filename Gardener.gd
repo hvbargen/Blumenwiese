@@ -14,35 +14,57 @@ export var jump_accel = 300.0 # m/s
 
 signal spawned_seed
 
-var direction = Vector3.FORWARD
-var velocity = Vector3.ZERO
-var running = false
+export var direction = - Vector3.FORWARD # TODO Why is minus necessary?
+export var velocity = Vector3.ZERO
+
+enum RunState { INIT, IDLE, JUMPING, RUNNING, SPRINTING, SLIDING }
+
+onready var run_state = RunState.INIT setget set_run_state
+
 var anim : AnimationPlayer
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
 	anim = get_node("Pivot/Spatial/3DGodotRobot/AnimationPlayer")
-	anim.play("Idle-loop")
+	anim.play("Emote1")
+	print("Initial direction: ", direction)
+	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
 	
 
 func _physics_process(delta):
 	handle_input(delta)
-	
-	
+
+func set_run_state(new_state):
+	print("set_run_state ", new_state)
+	run_state = new_state
+	if anim != null:
+		match run_state:
+			RunState.INIT:
+				anim.play("Emote1")
+			RunState.IDLE:
+				anim.play("Idle-loop")
+			RunState.JUMPING:
+				anim.play("Jump")
+			RunState.RUNNING:
+				anim.play("Run-loop")
+			RunState.SPRINTING:
+				anim.play("Sprint-loop")
+			RunState.SLIDING: 
+				anim.play("GroundSlide")
+
 func handle_input(delta):
+	var stopped = false
 	var forward = 0
 	var turn = 0
 	var jump = false
 	var on_floor = is_on_floor()
 	if Input.is_action_pressed("forward"):
-		forward += 1
-	if Input.is_action_pressed("backward"):
-		forward -= 1;
+		forward = Input.get_action_strength("forward")
 	if Input.is_action_pressed("turn_right"):
-		turn += 1
+		turn += Input.get_action_strength("turn_right")
 	if Input.is_action_pressed("turn_left"):
-		turn -= 1
+		turn -= Input.get_action_strength("turn_left")
 	if Input.is_action_pressed("jump"):
 		jump = true
 		
@@ -50,59 +72,60 @@ func handle_input(delta):
 	direction = direction.normalized()
 	if turn != 0:
 		var angle = - turn * turn_speed * delta
-		$Pivot.rotate_y(angle)
+		rotate_y(angle)
 		direction = direction.rotated(Vector3.UP, angle)
 
-	var delta_velocity2d = Vector2.ZERO
-	var direction2d: Vector2
+	var delta_velocity2d = Vector3.ZERO
+	var direction2d: Vector3
 	
-	direction2d.x = direction.x
-	direction2d.y = - (direction.z)
+	direction2d = direction
+	direction2d.y = 0
 	direction2d = direction2d.normalized()
 
-	var velocity2d = Vector2.ZERO
-	velocity2d.x = velocity.x
-	velocity2d.y = - (velocity.z)
+	var velocity2d = Vector3.ZERO
+	velocity2d = velocity
+	velocity2d.y = 0
 
 	if on_floor:	
 		if forward > 0:
-			running = true
+			# Run / Accelerate
+			if not (run_state in [RunState.RUNNING, RunState.SPRINTING]):
+				set_run_state(RunState.RUNNING)
 			delta_velocity2d = direction2d * delta * accel 
 			velocity2d += delta_velocity2d
 			velocity2d = velocity2d.limit_length(max_speed)
-		else:
-			running = false
+			if velocity2d.length_squared() > 0.8 * (max_speed * max_speed) and run_state != RunState.SPRINTING:
+				print("Start sprinting")
+				set_run_state(RunState.SPRINTING)
+			#print("Velocity2d=", velocity2d)
+		elif run_state in [RunState.RUNNING, RunState.SPRINTING, RunState.SLIDING]:
+			# Break
+			if run_state != RunState.SLIDING:
+				print("Start sliding")
+				set_run_state(RunState.SLIDING)
 			delta_velocity2d = velocity2d.normalized() * delta * -break_accel
 			if delta_velocity2d.length_squared() > velocity2d.length_squared():
-				velocity2d = Vector2.ZERO
+				velocity2d = Vector3.ZERO
+				set_run_state(RunState.IDLE)
+				print("Stopped!")
+				stopped = true
 				if forward < 0:
 					pass # TODO 180° Turn
 			else:
 				velocity2d += delta_velocity2d
-	
-	# Select the right animation.
-	if forward > 0:
-		if on_floor and velocity2d.length_squared() > max_speed * max_speed / 0.7:
-			anim.play("Sprint-loop")
+		if jump:
+			set_run_state(RunState.JUMPING)	
+			velocity.y = jump_accel * delta
+			emit_signal("spawned_seed")
 		else:
-			anim.play("Run-loop")
-	else:
-		if on_floor:
-			if velocity2d.length_squared() < 0.1:
-				anim.play("Idle-loop")
-			else:
-				anim.play("GroundSlide")
-		else:	
-			anim.play("Jump")
+			# Move the player
+			velocity.x = velocity2d.x
+			velocity.z = velocity2d.z
 
-	# Move the player
-	velocity.x = velocity2d.x
-	velocity.z = - (velocity2d.y)
-	if jump and on_floor:
-		velocity.y = jump_accel * delta
-		emit_signal("spawned_seed")
-	else:
+	if not jump:
+		# Gravity
 		velocity.y -= gravity * delta
+	
 	velocity = move_and_slide(velocity, Vector3.UP)
 	
 	if translation.y < - 30:
@@ -110,3 +133,10 @@ func handle_input(delta):
 		queue_free()
 		print("Fallen below ground...")
 	
+func _on_AnimationPlayer_animation_started(anim_name):
+	print("Animation started: ", anim_name)
+
+func _on_AnimationPlayer_animation_finished(anim_name):
+	print("Animation finished: ", anim_name)
+	if run_state == RunState.INIT:
+		set_run_state(RunState.IDLE)
