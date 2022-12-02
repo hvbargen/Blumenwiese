@@ -13,7 +13,7 @@ var logger:= Logger.new("Main", Logger.Level.DEBUG)
 
 var active_cam : int = 0
 
-const camera_nodes: Array = ["Gardener/3rdPerson/Camera", "FixedPerspective1/Camera"]
+const camera_nodes: Array = ["Gardener1/3rdPerson/Camera", "FixedPerspective1/Camera", "Gardener2/3rdPerson/Camera", ]
 var cameras : Array
 
 # Called when the node enters the scene tree for the first time.
@@ -32,11 +32,10 @@ func _ready():
 #func _process(delta):
 #	pass
 
-func _on_Gardener_spawned_seed():
-	logger.debug("Spawning seed...")
-	var spawn_location = get_node("Gardener")
+func _on_Gardener_spawned_seed(who: Node):
+	logger.debug("%s Spawning seed...", who.name)
 	var new_seed = seed_scene.instance()
-	var t = spawn_location.translation
+	var t = who.translation
 	t.y += 1.8
 	new_seed.initialize(t)
 	add_child(new_seed)

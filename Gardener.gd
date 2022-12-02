@@ -12,7 +12,7 @@ export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
 
-signal spawned_seed
+signal spawned_seed(who)
 
 export var direction = - Vector3.FORWARD # TODO Why is minus necessary?
 export var velocity = Vector3.ZERO
@@ -54,7 +54,6 @@ func set_run_state(new_state):
 				anim.play("GroundSlide")
 
 func handle_input(delta):
-	var stopped = false
 	var forward = 0
 	var turn = 0
 	var jump = false
@@ -108,7 +107,6 @@ func handle_input(delta):
 				velocity2d = Vector3.ZERO
 				set_run_state(RunState.IDLE)
 				print("Stopped!")
-				stopped = true
 				if forward < 0:
 					pass # TODO 180° Turn
 			else:
@@ -116,7 +114,7 @@ func handle_input(delta):
 		if jump:
 			set_run_state(RunState.JUMPING)	
 			velocity.y = jump_accel * delta
-			emit_signal("spawned_seed")
+			emit_signal("spawned_seed", self)
 		else:
 			# Move the player
 			velocity.x = velocity2d.x
