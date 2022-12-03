@@ -11,6 +11,7 @@ export var gravity = 9.81 # m/s²
 export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
+export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0)
 
 signal spawned_seed(who)
 
@@ -25,10 +26,14 @@ var anim : AnimationPlayer
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	var chest: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Chest"
+	
+	var mat: Material = chest.get_surface_material(0).duplicate()
+	mat.albedo_color = shirt_color
+	chest.set_surface_material(0, mat)
+	
 	anim = get_node("Pivot/Spatial/3DGodotRobot/AnimationPlayer")
 	anim.play("Emote1")
-	print("Initial direction: ", direction)
 	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
 	
 
@@ -66,6 +71,9 @@ func handle_input(delta):
 		turn -= Input.get_action_strength("turn_left")
 	if Input.is_action_pressed("jump"):
 		jump = true
+		
+	if Input.is_physical_key_pressed(KEY_E):
+		anim.play("Explode")
 		
 	# Turn
 	direction = direction.normalized()

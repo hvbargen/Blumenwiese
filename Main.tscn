@@ -52,6 +52,7 @@ transform = Transform( 1, -1.63447e-07, -2.04891e-07, 6.98492e-10, 1, -1.81608e-
 [node name="Gardener2" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 0.999999, 0, 0, 0, 0.999998, 3.47016, 1.43313, -4.50944 )
 collision_layer = 2
+shirt_color = Color( 0.960784, 0.901961, 0.0313726, 1 )
 
 [node name="3rdPerson" type="Spatial" parent="Gardener2"]
 transform = Transform( -1, 0, -8.74228e-08, -3.11841e-08, 0.934217, 0.356705, 8.16718e-08, 0.356706, -0.934217, 0, 2.68398, -3.94876 )
