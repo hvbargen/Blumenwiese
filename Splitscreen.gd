@@ -6,11 +6,13 @@ onready var players := {
 		viewport = $VBoxContainer/ViewportContainer1/Viewport1,
 		camera = $VBoxContainer/ViewportContainer1/Viewport1/Camera1,
 		player = $"VBoxContainer/ViewportContainer1/Viewport1/Main/Gardener1",
+		nickname = "Karl",
 	},
 	"2": {
 		viewport = $VBoxContainer/ViewportContainer2/Viewport2,
 		camera = $VBoxContainer/ViewportContainer2/Viewport2/Camera2,
-		player = $"VBoxContainer/ViewportContainer1/Viewport1/Main/Gardener2"
+		player = $"VBoxContainer/ViewportContainer1/Viewport1/Main/Gardener2",
+		nickname = "Heinz",
 	},
 }
 
@@ -23,6 +25,7 @@ func _ready():
 			var remote_transform := RemoteTransform.new()
 			remote_transform.remote_path = player.camera.get_path()
 			player.player.get_node("3rdPerson").add_child(remote_transform)
+			player.player.nickname = player.nickname
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

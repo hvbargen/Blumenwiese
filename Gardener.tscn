@@ -4132,6 +4132,15 @@ visible = false
 lod_max_distance = 10.0
 mesh = SubResource( 28 )
 
+[node name="NameIndicator" type="Label3D" parent="Pivot/Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82668, 0 )
+cast_shadow = 0
+pixel_size = 0.015
+billboard = 1
+modulate = Color( 0.94902, 0.94902, 0.94902, 1 )
+outline_modulate = Color( 0, 0, 0, 0.784314 )
+text = "<Player name>"
+
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.031077, 0.99898, 0, -0.405663, -0.0173479, 0, 0.870002, -0.000712223 )
 shape = SubResource( 26 )

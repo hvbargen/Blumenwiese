@@ -12,6 +12,7 @@ export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
 export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0)
+export var nickname: String = "<nickname>" setget set_nickname
 
 signal spawned_seed(who)
 
@@ -146,3 +147,7 @@ func _on_AnimationPlayer_animation_finished(anim_name):
 	print("Animation finished: ", anim_name)
 	if run_state == RunState.INIT:
 		set_run_state(RunState.IDLE)
+
+func set_nickname(new_nickname):
+	nickname = new_nickname
+	$Pivot/Spatial/NameIndicator.text = nickname
