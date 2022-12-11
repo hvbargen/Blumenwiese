@@ -8,7 +8,7 @@ extends Node
 export (PackedScene) var seed_scene
 export (PackedScene) var flower_scene
 
-const Logger = preload("Logger.gd")
+const Logger = preload("res://util/Logger.gd")
 var logger:= Logger.new("Main", Logger.Level.DEBUG)
 
 var active_cam : int = 0

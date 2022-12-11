@@ -3,22 +3,58 @@ extends Control
 
 const MAX_PLAYERS := 4
 
+const Logger = preload("res://util/Logger.gd")
+var logger: Logger
+
 var server_port := 9000
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+var player_node_template: Control
 
+var local_profiles: Array # of NetworkPlayer
+
+func _init():
+	._init()
+	logger = Logger.new("NetStartMenu")
+	logger.level = Logger.Level.DEBUG
+	logger.name += (get_instance_id() as String)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	player_node_template = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer
+	player_node_template.hide()
 	var mp = get_tree().multiplayer
 	mp.connect("server_disconnected", self, "on_server_disconnected")
 	mp.connect("connected_to_server", self, "on_connected_to_server")
 	mp.connect("connection_failed", self, "on_connection_failed")
 	mp.connect("network_peer_connected", self, "on_network_peer_connected")
 	mp.connect("network_peer_disconnected", self, "on_network_peer_disconnected")
-	pass # Replace with function body.
+	load_local_profiles()
+	
+func load_local_profiles():
+	local_profiles = NetworkPlayer.load_all_local()
+	show_local_profiles()
+
+func show_local_profiles():
+	var container = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
+	for child in container.get_children():
+		if child.name.begins_with("Icon"):
+			child.queue_free()
+	for nw_player in local_profiles:
+		show_local_profile(nw_player)
+		
+func show_local_profile(nw_player: NetworkPlayer):
+	var container = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
+	var btn_add = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/BtnAdd
+	print("show ", nw_player.nickname)
+	var pn = player_node_template.duplicate()
+	var index = container.get_child_count() - 1
+	pn.name = "Icon#%d" % index
+	pn.get_node("Col1").color = nw_player.fav_color1
+	pn.get_node("Col2").color = nw_player.fav_color2
+	pn.get_node("Nickname").text = nw_player.nickname
+	container.add_child(pn)
+	container.move_child(pn, index)
+	pn.visible = true
 
 func on_connected_to_server():
 	print("Connected to server!")
@@ -65,3 +101,16 @@ func _on_BtnClient_pressed():
 func show_our_network_role():
 	print("Our network role is: Server? " + (get_tree().is_network_server() as String) + ", unique id=", get_tree().get_network_unique_id())
 
+
+
+func _on_BtnAdd_pressed():
+	# Create a new local profile.
+	$DlgCreateProfile.popup_centered()
+
+
+func _on_DlgCreateProfile_profile_created(nw_player: NetworkPlayer):
+	print("New profile created: ", nw_player.nickname)
+	show_local_profile(nw_player)
+
+func _on_DlgCreateProfile_profile_edited(nw_player: NetworkPlayer):
+	print("TODO: Profile edited: ", nw_player.nickname)

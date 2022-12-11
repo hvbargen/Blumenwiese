@@ -1,6 +1,6 @@
 extends Spatial
 
-const Logger = preload("Logger.gd")
+const Logger = preload("res://util/Logger.gd")
 var logger: Logger
 
 export var color: Color = Color8(230, 0, 20)

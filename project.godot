@@ -8,11 +8,25 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Resource",
+"class": "NetworkPlayer",
+"language": "GDScript",
+"path": "res://network/Player.gd"
+} ]
+_global_script_class_icons={
+"NetworkPlayer": ""
+}
+
 [application]
 
 config/name="Blumenwiese"
-run/main_scene="res://Splitscreen.tscn"
+run/main_scene="res://NetStartMenu.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Players="*res://gameplay/Players.gd"
 
 [display]
 

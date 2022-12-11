@@ -2,7 +2,7 @@ extends Spatial
 
 export var color: Color
 
-const Logger = preload("Logger.gd")
+const Logger = preload("res://util/Logger.gd")
 var logger: Logger
 
 func _init():

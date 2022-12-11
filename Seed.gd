@@ -14,17 +14,17 @@ var start_y: float
 
 const SINK_SPEED = 0.1
 
-const Logger = preload("Logger.gd")
+const Logger = preload("res://util/Logger.gd")
 var logger: Logger
 
 func _init():
 	._init()
 	logger = Logger.new("Seed")
+	logger.level = Logger.Level.DEBUG
+	logger.name += (get_instance_id() as String)
 	
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	logger.level = Logger.Level.DEBUG
-	logger.name += (get_instance_id() as String)
 	var torque = Vector3.ZERO
 	torque.x = rand_range(-0.2, 0.2)
 	torque.y = rand_range(-0.2, 0.2)
