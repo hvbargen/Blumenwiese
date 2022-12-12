@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/3DGodotRobot.glb-5195e52c76aadc610c2192d3e031fdee.scn"
+path="res://.import/3DGodotRobot.glb-64705f6ad47a2b49d2e79b81f8bfebf7.scn"
 
 [deps]
 
-source_file="res://3DGodotRobot.glb"
-dest_files=[ "res://.import/3DGodotRobot.glb-5195e52c76aadc610c2192d3e031fdee.scn" ]
+source_file="res://avatars/gardener/3DGodotRobot.glb"
+dest_files=[ "res://.import/3DGodotRobot.glb-64705f6ad47a2b49d2e79b81f8bfebf7.scn" ]
 
 [params]
 

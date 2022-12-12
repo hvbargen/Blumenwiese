@@ -26,7 +26,7 @@ func error(fmt: String, arg1=null, arg2=null, arg3=null, arg4=null, arg5=null):
 
 func _format(lvl, fmt: String, arg1, arg2=null, arg3=null, arg4=null, arg5=null):
 	if level <= lvl:
-		var argv = PoolStringArray()
+		var argv = []
 		if arg1 != null:
 			argv.push_back(arg1 as String)
 		if arg2 != null:
@@ -40,8 +40,9 @@ func _format(lvl, fmt: String, arg1, arg2=null, arg3=null, arg4=null, arg5=null)
 		var msg: String
 		if len(argv) > 0:
 			# prints(fmt, len(argv), argv)
-			# FIXME: Does not work with Color: msg = fmt % argv
-			msg = fmt + " " + argv.join(", ")
+			# FIXME: Does not work with Color: 
+			msg = fmt % argv
+			#msg = fmt + " " + argv.join(", ")
 		else:
 			msg = fmt
 		return Level.keys()[level] + " (" + self.name + "): " + msg

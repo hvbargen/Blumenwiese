@@ -21,7 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Blumenwiese"
-run/main_scene="res://NetStartMenu.tscn"
+run/main_scene="res://startmenu/NetStartMenu.tscn"
 config/icon="res://icon.png"
 
 [autoload]

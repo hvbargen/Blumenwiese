@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/GodotPalette.png-82728c10e77a50d982d4509802ecba08.stex"
+path="res://.import/GodotPalette.png-65002f21b10f29440b0e5aa9fb3b2e79.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://GodotRobotPaletteSwap/GodotPalette.png"
-dest_files=[ "res://.import/GodotPalette.png-82728c10e77a50d982d4509802ecba08.stex" ]
+source_file="res://avatars/gardener/GodotRobotPaletteSwap/GodotPalette.png"
+dest_files=[ "res://.import/GodotPalette.png-65002f21b10f29440b0e5aa9fb3b2e79.stex" ]
 
 [params]
 

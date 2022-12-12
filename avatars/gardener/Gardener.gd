@@ -14,6 +14,7 @@ export var jump_accel = 300.0 # m/s
 export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0)
 export var nickname: String = "<nickname>" setget set_nickname
 
+signal out_of_bounds
 signal spawned_seed(who)
 
 export var direction = - Vector3.FORWARD # TODO Why is minus necessary?

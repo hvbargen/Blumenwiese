@@ -1,9 +1,10 @@
 [gd_scene load_steps=10 format=2]
 
-[ext_resource path="res://Blattkranz.gd" type="Script" id=1]
-[ext_resource path="res://GreenLeafShader.tres" type="Material" id=2]
-[ext_resource path="res://OurWorldEnv.tres" type="Environment" id=3]
-[ext_resource path="res://Leafs1.gd" type="Script" id=4]
+[ext_resource path="res://scenes/blumenwiese/Blattkranz.gd" type="Script" id=1]
+[ext_resource path="res://scenes/blumenwiese/GreenLeafShader.tres" type="Material" id=2]
+[ext_resource path="res://scenes/blumenwiese/OurWorldEnv.tres" type="Environment" id=3]
+[ext_resource path="res://scenes/blumenwiese/Leafs1.gd" type="Script" id=4]
+
 
 [sub_resource type="QuadMesh" id=3]
 material = ExtResource( 2 )

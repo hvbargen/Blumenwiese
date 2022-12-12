@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://NetStartMenu.gd" type="Script" id=1]
-[ext_resource path="res://gameplay/DlgCreateProfile.gd" type="Script" id=2]
-[ext_resource path="res://LocalProfileButton.gd" type="Script" id=3]
+[ext_resource path="res://startmenu/NetStartMenu.gd" type="Script" id=1]
+[ext_resource path="res://startmenu/DlgCreateProfile.gd" type="Script" id=2]
+[ext_resource path="res://startmenu/LocalProfileButton.gd" type="Script" id=3]
 
 [sub_resource type="Theme" id=1]
 

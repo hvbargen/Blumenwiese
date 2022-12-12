@@ -1,9 +1,10 @@
 [gd_scene load_steps=8 format=2]
 
-[ext_resource path="res://BlossomLeafShader.tres" type="Material" id=1]
-[ext_resource path="res://OurWorldEnv.tres" type="Environment" id=2]
-[ext_resource path="res://BlossomRing.gd" type="Script" id=3]
-[ext_resource path="res://Blossom.gd" type="Script" id=4]
+[ext_resource path="res://scenes/blumenwiese/BlossomLeafShader.tres" type="Material" id=1]
+[ext_resource path="res://scenes/blumenwiese/OurWorldEnv.tres" type="Environment" id=2]
+[ext_resource path="res://scenes/blumenwiese/BlossomRing.gd" type="Script" id=3]
+[ext_resource path="res://scenes/blumenwiese/Blossom.gd" type="Script" id=4]
+
 
 [sub_resource type="QuadMesh" id=1]
 material = ExtResource( 1 )
