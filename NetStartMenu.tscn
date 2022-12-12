@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://NetStartMenu.gd" type="Script" id=1]
 [ext_resource path="res://gameplay/DlgCreateProfile.gd" type="Script" id=2]
+[ext_resource path="res://LocalProfileButton.gd" type="Script" id=3]
 
 [sub_resource type="Theme" id=1]
 
@@ -48,30 +49,44 @@ size_flags_horizontal = 3
 margin_right = 184.0
 margin_bottom = 100.0
 
-[node name="DummyPlayer" type="Control" parent="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles"]
+[node name="DummyPlayer" type="Button" parent="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles"]
 margin_right = 100.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 100, 100 )
+script = ExtResource( 3 )
 
 [node name="Col1" type="ColorRect" parent="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer"]
-margin_right = 80.0
-margin_bottom = 40.0
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = 10.0
+margin_top = 10.0
+margin_right = -10.0
 rect_min_size = Vector2( 80, 40 )
+mouse_filter = 1
 size_flags_horizontal = 3
 color = Color( 0.0745098, 0.87451, 0.407843, 1 )
 
 [node name="Col2" type="ColorRect" parent="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer"]
-margin_top = 40.0
-margin_right = 80.0
-margin_bottom = 80.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 10.0
+margin_top = -1.0
+margin_right = -10.0
+margin_bottom = -30.0
+mouse_filter = 1
 size_flags_horizontal = 3
 color = Color( 0.952941, 0.945098, 0.945098, 1 )
 
 [node name="Nickname" type="Label" parent="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer"]
-margin_top = 40.0
-margin_right = 80.0
-margin_bottom = 140.0
-rect_min_size = Vector2( 80, 40 )
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 1.0
+margin_top = -30.0
+margin_right = -1.0
+margin_bottom = -1.0
+rect_min_size = Vector2( 80, 30 )
 custom_colors/font_color = Color( 0.992157, 0.909804, 0.0313726, 1 )
 custom_colors/font_outline_modulate = Color( 0, 0, 0, 1 )
 custom_colors/font_color_shadow = Color( 0, 0, 0, 0.392157 )
@@ -171,7 +186,6 @@ text = "Press OK to say that you are ready to start the game.
 The game starts when all connected players are ready."
 
 [node name="DlgCreateProfile" type="WindowDialog" parent="."]
-visible = true
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 30.0
@@ -259,6 +273,9 @@ margin_bottom = 30.0
 rect_min_size = Vector2( 100, 30 )
 text = "Cancel"
 
+[connection signal="clicked" from="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer" to="." method="_on_DummyPlayer_clicked"]
+[connection signal="long_pressed" from="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer" to="." method="_on_DummyPlayer_long_pressed"]
+[connection signal="long_released" from="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer" to="." method="_on_DummyPlayer_long_released"]
 [connection signal="pressed" from="VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/BtnAdd" to="." method="_on_BtnAdd_pressed"]
 [connection signal="pressed" from="VBoxContainer/Network/BtnLocal" to="." method="_on_BtnLocal_pressed"]
 [connection signal="pressed" from="VBoxContainer/Network/BtnServer" to="." method="_on_BtnServer_pressed"]

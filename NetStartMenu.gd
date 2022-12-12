@@ -44,16 +44,19 @@ func show_local_profiles():
 		
 func show_local_profile(nw_player: NetworkPlayer):
 	var container = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
-	var btn_add = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/BtnAdd
 	print("show ", nw_player.nickname)
 	var pn = player_node_template.duplicate()
 	var index = container.get_child_count() - 1
+	container.add_child(pn)
+	container.move_child(pn, index)
 	pn.name = "Icon#%d" % index
+	update_local_profile_button(pn, nw_player)
+	
+func update_local_profile_button(pn: Button, nw_player):
+	pn.global_id = nw_player.global_id
 	pn.get_node("Col1").color = nw_player.fav_color1
 	pn.get_node("Col2").color = nw_player.fav_color2
 	pn.get_node("Nickname").text = nw_player.nickname
-	container.add_child(pn)
-	container.move_child(pn, index)
 	pn.visible = true
 
 func on_connected_to_server():
@@ -75,10 +78,11 @@ func on_server_disconnected():
 #func _process(delta):
 #	pass
 
-
 func _on_PlayerName_text_changed(new_text: String):
 	print("Name changed: ", new_text)
 
+func _on_BtnLocal_pressed():
+	print("TODO: Local Game")
 
 func _on_BtnServer_pressed():
 	var server_host = $VBoxContainer/HBoxContainer2/TxtHost.text
@@ -101,16 +105,31 @@ func _on_BtnClient_pressed():
 func show_our_network_role():
 	print("Our network role is: Server? " + (get_tree().is_network_server() as String) + ", unique id=", get_tree().get_network_unique_id())
 
-
-
 func _on_BtnAdd_pressed():
 	# Create a new local profile.
+	$DlgCreateProfile.initialize(null)
 	$DlgCreateProfile.popup_centered()
-
 
 func _on_DlgCreateProfile_profile_created(nw_player: NetworkPlayer):
 	print("New profile created: ", nw_player.nickname)
 	show_local_profile(nw_player)
 
 func _on_DlgCreateProfile_profile_edited(nw_player: NetworkPlayer):
-	print("TODO: Profile edited: ", nw_player.nickname)
+	print("Profile edited: ", nw_player.nickname)
+	for pn in $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles.get_children():
+		if pn.name.begins_with("Icon") and pn.global_id == nw_player.global_id:
+			update_local_profile_button(pn, nw_player)
+
+func _on_DummyPlayer_long_released(global_id):
+	print("Button long released", global_id)
+
+func _on_DummyPlayer_long_pressed(global_id):
+	print("Button long pressed", global_id)
+	for nw_player in local_profiles:
+		if nw_player.global_id == global_id:
+			$DlgCreateProfile.initialize(nw_player)
+			$DlgCreateProfile.popup_centered()
+			
+
+func _on_DummyPlayer_clicked(global_id):
+	print("Button clicked", global_id)
