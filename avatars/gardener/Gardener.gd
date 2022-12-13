@@ -5,6 +5,7 @@ extends KinematicBody
 # var a = 2
 # var b = "text"
 
+export var can_run = true
 export var max_speed = 6.0 # m/s
 export var turn_speed = 1.5 * PI #
 export var gravity = 9.81 # m/s²
@@ -65,8 +66,9 @@ func handle_input(delta):
 	var turn = 0
 	var jump = false
 	var on_floor = is_on_floor()
-	if Input.is_action_pressed("forward"):
-		forward = Input.get_action_strength("forward")
+	if can_run:
+		if Input.is_action_pressed("forward"):
+			forward = Input.get_action_strength("forward")
 	if Input.is_action_pressed("turn_right"):
 		turn += Input.get_action_strength("turn_right")
 	if Input.is_action_pressed("turn_left"):

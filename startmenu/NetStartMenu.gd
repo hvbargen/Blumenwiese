@@ -12,6 +12,10 @@ var player_node_template: Control
 
 var local_profiles: Array # of NetworkPlayer
 
+var current_input_device: Dictionary = {}
+
+var podest_scene := preload("res://scenes/podest/Podest.tscn")
+
 func _init():
 	._init()
 	logger = Logger.new("NetStartMenu")
@@ -29,6 +33,7 @@ func _ready():
 	mp.connect("network_peer_connected", self, "on_network_peer_connected")
 	mp.connect("network_peer_disconnected", self, "on_network_peer_disconnected")
 	load_local_profiles()
+	$VBoxContainer/Network/BtnLocal.call_deferred("grab_focus")
 	
 func load_local_profiles():
 	local_profiles = NetworkPlayer.load_all_local()
@@ -59,6 +64,31 @@ func update_local_profile_button(pn: Button, nw_player):
 	pn.get_node("Nickname").text = nw_player.nickname
 	pn.visible = true
 
+func _input(event):
+	if event is InputEventMouse:
+		return
+	if event is InputEventJoypadMotion and abs(event.axis_value) < 0.1:
+		return
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		current_input_device = {
+			"type": "Gamepad",
+			"device": event.device,
+			"device_name": Input.get_joy_name(event.device),
+		}
+		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d: %s" % [current_input_device.type, current_input_device["device"] + 1, current_input_device["device_name"]]
+		print(current_input_device)
+		if event is InputEventJoypadButton:
+			print(Input.get_joy_button_string(event.button_index))
+	if event is InputEventKey:
+		current_input_device = {
+			"type": "Keyboard",
+			"device": event.device,
+			"device_name": "Keyboard",
+		}
+		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d" % [current_input_device.type, current_input_device["device"] + 1]
+		print(current_input_device)
+
+
 func on_connected_to_server():
 	print("Connected to server!")
 
@@ -85,8 +115,8 @@ func _on_BtnLocal_pressed():
 	print("TODO: Local Game")
 
 func _on_BtnServer_pressed():
-	var server_host = $VBoxContainer/HBoxContainer2/TxtHost.text
-	server_port = $VBoxContainer/HBoxContainer2/TxtHost.text as int
+	var server_host = $VBoxContainer/Network/TxtHost.text
+	server_port = $VBoxContainer/Network/TxtHost.text as int
 	print("Starting Server ", server_host, ":", server_port, " -- Note that the host is actually ignored!")
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(server_port, MAX_PLAYERS)
@@ -94,8 +124,8 @@ func _on_BtnServer_pressed():
 	show_our_network_role()
 
 func _on_BtnClient_pressed():
-	var server_host = $VBoxContainer/HBoxContainer2/TxtHost.text
-	server_port = $VBoxContainer/HBoxContainer2/TxtHost.text as int
+	var server_host = $VBoxContainer/Network/TxtHost.text
+	server_port = $VBoxContainer/Network/TxtHost.text as int
 	print("Starting Client, connecting to ", server_host, ":", server_port)
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(server_host, server_port)
@@ -120,16 +150,65 @@ func _on_DlgCreateProfile_profile_edited(nw_player: NetworkPlayer):
 		if pn.name.begins_with("Icon") and pn.global_id == nw_player.global_id:
 			update_local_profile_button(pn, nw_player)
 
+func find_local_profile(global_id: String) -> NetworkPlayer:
+	for nw_player in local_profiles:
+		if nw_player.global_id == global_id:
+			return nw_player
+	return null
+
 func _on_DummyPlayer_long_released(global_id):
 	print("Button long released", global_id)
 
 func _on_DummyPlayer_long_pressed(global_id):
-	print("Button long pressed", global_id)
-	for nw_player in local_profiles:
-		if nw_player.global_id == global_id:
-			$DlgCreateProfile.initialize(nw_player)
-			$DlgCreateProfile.popup_centered()
+	var nw_player = find_local_profile(global_id)
+	print("Button long pressed", nw_player.nickname)
+	assert(nw_player in local_profiles)
+	$DlgCreateProfile.initialize(nw_player)
+	$DlgCreateProfile.popup_centered()
 			
 
 func _on_DummyPlayer_clicked(global_id):
-	print("Button clicked", global_id)
+	var nw_player = find_local_profile(global_id)
+	print("Button clicked", nw_player.nickname)
+	join_party(nw_player)
+
+func join_party(nw_player: NetworkPlayer):
+	Players.connect("player_added", self, "player_added")
+	Players.add(nw_player, get_tree().get_network_unique_id())
+	
+func player_added(ap: Players.AdaptedPlayer):
+	var container = $VBoxContainer/ConnectedPlayers
+	var height := 200
+	var width := 150
+	var vpc := ViewportContainer.new()
+	vpc.rect_min_size.x = width
+	vpc.rect_min_size.y = height
+	vpc.name = "PodestScene#%d" % ap.index
+	vpc.visible = true
+	container.add_child(vpc)
+	var vp := Viewport.new()
+	vp.size.x = width
+	vp.size.y = height
+	vp.own_world = true
+	vp.name = "VPPodestScene#%d" % ap.index
+	vpc.add_child(vp)
+	var podest = podest_scene.instance()
+	podest.name = "ScnPodestScene#%d" % ap.index
+	var gardener = podest.get_node("Gardener")
+	gardener.nickname = ap.nw_player.nickname
+	gardener.shirt_color = ap.color
+	gardener.can_run = false
+	vp.add_child(podest)
+	var cam_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/TemplateViewport/Camera
+	var camera = Camera.new()
+	camera.transform = cam_template.transform
+	camera.name = "CamPodestScene#%d" % ap.index
+	vp.add_child(camera)
+	print("Hallo!")
+	
+
+func leave_party(nw_player: NetworkPlayer):
+	for ap in Players.connected:
+		if ap.nw_player.global_id == nw_player.global_id:
+			Players.remove(ap)
+	
