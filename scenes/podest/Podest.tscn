@@ -28,7 +28,6 @@ can_run = false
 [node name="SpotLight" type="SpotLight" parent="."]
 transform = Transform( 0.581848, 0.154737, -0.798442, -0.0717353, 0.987672, 0.139134, 0.810128, -0.023678, 0.585775, -4.73607, 2.30732, 3.5217 )
 light_color = Color( 0.901961, 0.937255, 0.27451, 1 )
-light_energy = 0.881
 shadow_enabled = true
 spot_range = 11.0
 spot_attenuation = 0.901252
@@ -36,6 +35,7 @@ spot_angle = 24.6389
 
 [node name="SpotLight2" type="SpotLight" parent="."]
 transform = Transform( 0.707561, 0.089022, 0.701023, -0.0422981, 0.99559, -0.0837361, -0.705385, 0.0295964, 0.708206, 2.75259, 0.56671, 2.95499 )
+light_energy = 2.0
 shadow_enabled = true
 spot_range = 5.824
 spot_angle = 13.373

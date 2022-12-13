@@ -214,6 +214,7 @@ size_flags_horizontal = 3
 custom_constants/separation = 20
 
 [node name="TemplateViewPortContainer" type="ViewportContainer" parent="VBoxContainer/ConnectedPlayers"]
+visible = false
 margin_right = 150.0
 margin_bottom = 200.0
 rect_min_size = Vector2( 150, 200 )
@@ -222,7 +223,7 @@ rect_min_size = Vector2( 150, 200 )
 size = Vector2( 150, 200 )
 own_world = true
 handle_input_locally = false
-render_target_update_mode = 3
+render_target_update_mode = 0
 
 [node name="Camera" type="Camera" parent="VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/TemplateViewport"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.40705, 2.46508 )
@@ -282,18 +283,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 250.0
-margin_top = 64.0
-margin_right = 558.0
-margin_bottom = 476.0
+margin_left = 254.0
+margin_top = 68.0
+margin_right = 562.0
+margin_bottom = 480.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 568.0
-margin_top = 64.0
-margin_right = 876.0
-margin_bottom = 476.0
+margin_left = 572.0
+margin_top = 68.0
+margin_right = 880.0
+margin_bottom = 480.0
 edit_alpha = false
 presets_visible = false
 
