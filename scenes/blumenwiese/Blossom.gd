@@ -20,8 +20,8 @@ func _ready():
 #func _process(delta):
 #	pass
 
-func initialize(position: Vector3, color: Color, anzahl: int, winkel: float):
-	self.color = color
+func initialize(position: Vector3, blossom_color: Color, anzahl: int, winkel: float):
+	self.color = blossom_color
 	var blr = $Blossom/BlossomLeafRing
 	blr.anzahl = anzahl
 	blr.winkel_deg = winkel

@@ -69,9 +69,12 @@ func _input(event):
 		return
 	if event is InputEventJoypadMotion and abs(event.axis_value) < 0.1:
 		return
-	current_input_controller.initialize_from_event(event)
-	print(current_input_controller)
-	$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d: %s" % [current_input_controller.type, current_input_controller.device + 1, current_input_controller.device_name]
+	var input_controller = InputController.new()
+	input_controller.initialize_from_event(event)
+	if input_controller.device != current_input_controller.device or input_controller.device_name != current_input_controller.device_name:
+		current_input_controller = input_controller
+		print("Changed Input Controller: %s#%d" % [current_input_controller.device_name, current_input_controller.device + 1])
+	$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s#%d" % [current_input_controller.device_name, current_input_controller.device + 1]
 
 func on_connected_to_server():
 	print("Connected to server!")
@@ -149,7 +152,6 @@ func _on_DummyPlayer_long_pressed(global_id):
 	assert(nw_player in local_profiles)
 	$DlgCreateProfile.initialize(nw_player)
 	$DlgCreateProfile.popup_centered()
-			
 
 func _on_DummyPlayer_clicked(global_id):
 	var nw_player = find_local_profile(global_id)
@@ -169,10 +171,12 @@ func join_party(nw_player: NetworkPlayer):
 			var msg = "The current controller %s#%s is already used by %s!" % [current_input_controller.device_name, current_input_controller.device + 1, ap.nickname]
 			$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
 			return
-	var result = Players.connect("player_added", self, "player_added")
+	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
 	var controller = current_input_controller.duplicate()
-	var peer_id = get_tree().get_network_unique_id()
+	var peer_id = -1
+	if get_tree().network_peer is NetworkedMultiplayerPeer:
+		peer_id = get_tree().get_network_unique_id()
 	Players.add(nw_player, peer_id, controller)
 	
 func player_added(ap: AdaptedPlayer):
@@ -205,7 +209,9 @@ func player_added(ap: AdaptedPlayer):
 	vp.add_child(camera)
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
-	podest.controller = ap.controller
+	gardener.controller = ap.controller
+	gardener.controller.enable()
+	podest.get_node("LblController").text = "%s#%d" % [ap.controller.device_name, ap.controller.device + 1]
 	
 
 func leave_party(nw_player: NetworkPlayer):

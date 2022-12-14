@@ -1,5 +1,6 @@
 extends KinematicBody
 
+var controller: InputController
 
 # Declare member variables here. Examples:
 # var a = 2
@@ -64,18 +65,15 @@ func handle_input(delta):
 	var turn = 0
 	var jump = false
 	var on_floor = is_on_floor()
-	if can_run:
-		if Input.is_action_pressed("forward"):
-			forward = Input.get_action_strength("forward")
-	if Input.is_action_pressed("turn_right"):
-		turn += Input.get_action_strength("turn_right")
-	if Input.is_action_pressed("turn_left"):
-		turn -= Input.get_action_strength("turn_left")
-	if Input.is_action_pressed("jump"):
-		jump = true
-		
-	if Input.is_physical_key_pressed(KEY_E):
-		anim.play("Explode")
+	if controller is InputController and controller.index >= 0:
+		if Input.is_action_pressed("forward#%s" % controller.index):
+			forward = Input.get_action_strength("forward#%s" % controller.index)
+		if Input.is_action_pressed("turn_right#%s" % controller.index):
+			turn += Input.get_action_strength("turn_right#%s" % controller.index)
+		if Input.is_action_pressed("turn_left#%s" % controller.index):
+			turn -= Input.get_action_strength("turn_left#%s" % controller.index)
+		if Input.is_action_pressed("jump#%s" % controller.index):
+			jump = true
 		
 	# Turn
 	direction = direction.normalized()
@@ -100,20 +98,21 @@ func handle_input(delta):
 			# Run / Accelerate
 			if not (run_state in [RunState.RUNNING, RunState.SPRINTING]):
 				set_run_state(RunState.RUNNING)
-			delta_velocity2d = direction2d * delta * accel 
-			velocity2d += delta_velocity2d
-			velocity2d = velocity2d.limit_length(max_speed)
-			if velocity2d.length_squared() > 0.8 * (max_speed * max_speed) and run_state != RunState.SPRINTING:
-				print("Start sprinting")
-				set_run_state(RunState.SPRINTING)
+			if can_run:
+				delta_velocity2d = direction2d * delta * accel 
+				velocity2d += delta_velocity2d
+				velocity2d = velocity2d.limit_length(max_speed)
+				if velocity2d.length_squared() > 0.8 * (max_speed * max_speed) and run_state != RunState.SPRINTING:
+					print("Start sprinting")
+					set_run_state(RunState.SPRINTING)
 			#print("Velocity2d=", velocity2d)
-		elif run_state in [RunState.RUNNING, RunState.SPRINTING, RunState.SLIDING]:
+		elif run_state in [RunState.RUNNING, RunState.SPRINTING, RunState.SLIDING, RunState.JUMPING]:
 			# Break
-			if run_state != RunState.SLIDING:
+			if run_state != RunState.SLIDING and velocity2d != Vector3.ZERO:
 				print("Start sliding")
 				set_run_state(RunState.SLIDING)
 			delta_velocity2d = velocity2d.normalized() * delta * -break_accel
-			if delta_velocity2d.length_squared() > velocity2d.length_squared():
+			if delta_velocity2d.length_squared() > velocity2d.length_squared() or velocity2d == Vector3.ZERO:
 				velocity2d = Vector3.ZERO
 				set_run_state(RunState.IDLE)
 				print("Stopped!")
