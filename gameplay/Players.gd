@@ -2,17 +2,6 @@ extends Node
 
 signal player_added(ap)
 signal player_removed(ap)
-
-class AdaptedPlayer:
-	var nw_player: NetworkPlayer
-	var color: Color
-	var index: int
-	var this_machine: bool
-	var peer_id: int
-	var nickname: String
-	
-	func dump():
-		print("#%d=%s ('%s')" % [index, peer_id, nickname])
 	
 var connected: Array = []   # of AdaptedPlayer
 
@@ -23,19 +12,15 @@ func dump():
 	for p in connected:
 		p.dump()
 
-
-func add(nw_player: NetworkPlayer, peer_id):
+func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController):
 	print("Before add %s:" % nw_player)
 	dump()
-	var ap = AdaptedPlayer.new()
+	var ap = AdaptedPlayer.new(nw_player, peer_id, controller)
 	ap.nw_player = nw_player
 	ap.peer_id = peer_id
 	ap.nickname = nw_player.nickname
-	if get_tree().get_network_unique_id() == peer_id:
-		ap.this_machine = true
-	else:
-		ap.this_machine = false
 	ap.index = len(connected)
+	controller.index = ap.index
 	if not (peer_id in peers):
 		peers[peer_id] = [ap]
 	else:
@@ -80,6 +65,7 @@ func remove_peer(peer_id):
 	if peers.has(peer_id):
 		for ap in peers[peer_id]:
 			remove(ap)
+# warning-ignore:return_value_discarded
 		peers.erase(peer_id)
 	else:
 		printerr("Peer was not connected: %s" % peer_id)

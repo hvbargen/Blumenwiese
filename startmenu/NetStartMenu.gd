@@ -6,13 +6,13 @@ const MAX_PLAYERS := 4
 const Logger = preload("res://util/Logger.gd")
 var logger: Logger
 
-var server_port := 9000
+var server_port : int = 9000
 
 var player_node_template: Control
 
 var local_profiles: Array # of NetworkPlayer
 
-var current_input_device: Dictionary = {}
+var current_input_controller: InputController = InputController.new()
 
 var podest_scene := preload("res://scenes/podest/Podest.tscn")
 
@@ -69,25 +69,9 @@ func _input(event):
 		return
 	if event is InputEventJoypadMotion and abs(event.axis_value) < 0.1:
 		return
-	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
-		current_input_device = {
-			"type": "Gamepad",
-			"device": event.device,
-			"device_name": Input.get_joy_name(event.device),
-		}
-		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d: %s" % [current_input_device.type, current_input_device["device"] + 1, current_input_device["device_name"]]
-		print(current_input_device)
-		if event is InputEventJoypadButton:
-			print(Input.get_joy_button_string(event.button_index))
-	if event is InputEventKey:
-		current_input_device = {
-			"type": "Keyboard",
-			"device": event.device,
-			"device_name": "Keyboard",
-		}
-		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d" % [current_input_device.type, current_input_device["device"] + 1]
-		print(current_input_device)
-
+	current_input_controller.initialize_from_event(event)
+	print(current_input_controller)
+	$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s #%d: %s" % [current_input_controller.type, current_input_controller.device + 1, current_input_controller.device_name]
 
 func on_connected_to_server():
 	print("Connected to server!")
@@ -173,10 +157,25 @@ func _on_DummyPlayer_clicked(global_id):
 	join_party(nw_player)
 
 func join_party(nw_player: NetworkPlayer):
-	Players.connect("player_added", self, "player_added")
-	Players.add(nw_player, get_tree().get_network_unique_id())
+	# if no controller is selected, player cannot join
+	if current_input_controller.device_name.empty():
+		var msg = "Please use the keyboard or a gamepad - using the mouse is not supported."
+		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
+		return
+	# if controller is already in use, player cannot join
+	for ap in Players.connected:
+		var ap_controller = ap.controller as InputController
+		if ap_controller.type == current_input_controller.type and ap_controller.device == current_input_controller.device:
+			var msg = "The current controller %s#%s is already used by %s!" % [current_input_controller.device_name, current_input_controller.device + 1, ap.nickname]
+			$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
+			return
+	var result = Players.connect("player_added", self, "player_added")
+	print("Connect result: ", result)
+	var controller = current_input_controller.duplicate()
+	var peer_id = get_tree().get_network_unique_id()
+	Players.add(nw_player, peer_id, controller)
 	
-func player_added(ap: Players.AdaptedPlayer):
+func player_added(ap: AdaptedPlayer):
 	var container = $VBoxContainer/ConnectedPlayers
 	var height := 200
 	var width := 150
@@ -204,7 +203,9 @@ func player_added(ap: Players.AdaptedPlayer):
 	camera.transform = cam_template.transform
 	camera.name = "CamPodestScene#%d" % ap.index
 	vp.add_child(camera)
-	print("Hallo!")
+	print("'Hello' from %s" % gardener.nickname)
+	gardener.get_node("AnimationPlayer").play("Emote1")
+	podest.controller = ap.controller
 	
 
 func leave_party(nw_player: NetworkPlayer):

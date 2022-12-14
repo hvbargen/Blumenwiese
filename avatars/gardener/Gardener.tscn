@@ -167,6 +167,12 @@ surfaces/0 = {
 "vertex_count": 9396
 }
 
+[sub_resource type="SphereMesh" id=28]
+
+[sub_resource type="CapsuleShape" id=26]
+radius = 0.855937
+height = 0.002
+
 [sub_resource type="Animation" id=6]
 resource_name = "Attack1"
 length = 1.20833
@@ -3939,12 +3945,6 @@ tracks/24/imported = false
 tracks/24/enabled = true
 tracks/24/keys = PoolRealArray( 0, 1, -1.47e-10, -0.0206704, 0.000616562, -0.112805, -0.694377, 0.133567, 0.698051, 1, 1, 1, 0.0416667, 1, -1.47e-10, -0.0206704, 0.000616562, -0.112805, -0.694377, 0.133567, 0.698051, 1, 1, 1 )
 
-[sub_resource type="SphereMesh" id=28]
-
-[sub_resource type="CapsuleShape" id=26]
-radius = 0.855937
-height = 0.002
-
 [node name="Gardener" type="KinematicBody"]
 script = ExtResource( 3 )
 
@@ -4101,8 +4101,27 @@ skin = SubResource( 2 )
 mesh = SubResource( 5 )
 skin = SubResource( 2 )
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Pivot/Spatial/3DGodotRobot"]
-autoplay = "Emote1"
+[node name="ForwardIndicator" type="CSGMesh" parent="Pivot/Spatial"]
+transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.7, 1 )
+visible = false
+lod_max_distance = 10.0
+mesh = SubResource( 28 )
+
+[node name="NameIndicator" type="Label3D" parent="Pivot/Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82668, 0 )
+cast_shadow = 0
+pixel_size = 0.015
+billboard = 1
+modulate = Color( 0.94902, 0.94902, 0.94902, 1 )
+outline_modulate = Color( 0, 0, 0, 0.784314 )
+text = "<Player name>"
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.031077, 0.99898, 0, -0.405663, -0.0173479, 0, 0.870002, -0.000712223 )
+shape = SubResource( 26 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("../Pivot/Spatial/3DGodotRobot")
 anims/Attack1 = SubResource( 6 )
 anims/Crouch = SubResource( 7 )
 anims/Dive = SubResource( 8 )
@@ -4126,24 +4145,5 @@ anims/T-pose = SubResource( 23 )
 anims/WallJump = SubResource( 24 )
 anims/WallSlide = SubResource( 25 )
 
-[node name="ForwardIndicator" type="CSGMesh" parent="Pivot/Spatial"]
-transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.7, 1 )
-visible = false
-lod_max_distance = 10.0
-mesh = SubResource( 28 )
-
-[node name="NameIndicator" type="Label3D" parent="Pivot/Spatial"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82668, 0 )
-cast_shadow = 0
-pixel_size = 0.015
-billboard = 1
-modulate = Color( 0.94902, 0.94902, 0.94902, 1 )
-outline_modulate = Color( 0, 0, 0, 0.784314 )
-text = "<Player name>"
-
-[node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.031077, 0.99898, 0, -0.405663, -0.0173479, 0, 0.870002, -0.000712223 )
-shape = SubResource( 26 )
-
-[connection signal="animation_finished" from="Pivot/Spatial/3DGodotRobot/AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
-[connection signal="animation_started" from="Pivot/Spatial/3DGodotRobot/AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
+[connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]

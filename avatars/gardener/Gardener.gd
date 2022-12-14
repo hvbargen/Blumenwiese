@@ -35,10 +35,8 @@ func _ready():
 	mat.albedo_color = shirt_color
 	chest.set_surface_material(0, mat)
 	
-	anim = get_node("Pivot/Spatial/3DGodotRobot/AnimationPlayer")
-	anim.play("Emote1")
+	anim = get_node("AnimationPlayer")
 	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
-	
 
 func _physics_process(delta):
 	handle_input(delta)

@@ -10,11 +10,23 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Resource",
+"class": "AdaptedPlayer",
+"language": "GDScript",
+"path": "res://gameplay/AdaptedPlayer.gd"
+}, {
+"base": "Resource",
+"class": "InputController",
+"language": "GDScript",
+"path": "res://gameplay/InputController.gd"
+}, {
+"base": "Resource",
 "class": "NetworkPlayer",
 "language": "GDScript",
 "path": "res://network/Player.gd"
 } ]
 _global_script_class_icons={
+"AdaptedPlayer": "",
+"InputController": "",
 "NetworkPlayer": ""
 }
 
