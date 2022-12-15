@@ -4,6 +4,7 @@ class_name AdaptedPlayer
 
 var nw_player: NetworkPlayer
 var color: Color
+var second_color: Color
 var index: int
 var peer_id: int
 var nickname: String

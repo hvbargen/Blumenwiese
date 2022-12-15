@@ -32,8 +32,10 @@ func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController):
 		existing_colors.append(apc.color)
 	if not (ap.nw_player.fav_color1 in existing_colors):
 		ap.color = ap.nw_player.fav_color1
+		ap.second_color = ap.nw_player.fav_color2
 	elif not (ap.nw_player.fav_color2 in existing_colors):
 		ap.color = ap.nw_player.fav_color2
+		ap.second_color = ap.nw_player.fav_color1
 	else:
 		ap.color = Color.from_hsv(randf(), rand_range(0.8, 1), rand_range(0.8, 1), 1)
 		print("Must choose a random color for %s" % ap.nickname)

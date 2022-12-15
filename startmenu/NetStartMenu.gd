@@ -200,6 +200,7 @@ func player_added(ap: AdaptedPlayer):
 	var gardener = podest.get_node("Gardener")
 	gardener.nickname = ap.nw_player.nickname
 	gardener.shirt_color = ap.color
+	gardener.shorts_color = ap.second_color
 	gardener.can_run = false
 	vp.add_child(podest)
 	var cam_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/TemplateViewport/Camera

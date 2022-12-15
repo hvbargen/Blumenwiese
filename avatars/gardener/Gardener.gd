@@ -1,5 +1,7 @@
 extends KinematicBody
 
+const cloth_material = preload("res://avatars/gardener/RobotCloth.tres")
+
 var controller: InputController
 
 # Declare member variables here. Examples:
@@ -14,6 +16,7 @@ export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
 export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0)
+export var shorts_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 export var nickname: String = "<nickname>" setget set_nickname
 
 signal out_of_bounds
@@ -31,10 +34,14 @@ var anim : AnimationPlayer
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var chest: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Chest"
+	var bottom: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Bottom"
 	
-	var mat: Material = chest.get_surface_material(0).duplicate()
+	var mat: Material = cloth_material.duplicate()
 	mat.albedo_color = shirt_color
 	chest.set_surface_material(0, mat)
+	mat = cloth_material.duplicate()
+	mat.albedo_color = shorts_color
+	bottom.set_surface_material(0, mat)
 	
 	anim = get_node("AnimationPlayer")
 	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
