@@ -16,6 +16,8 @@ var current_input_controller: InputController = InputController.new()
 
 var podest_scene := preload("res://scenes/podest/Podest.tscn")
 
+var players_not_ready: Array = [] # of NetworkPlayer
+
 func _init():
 	._init()
 	logger = Logger.new("NetStartMenu")
@@ -34,7 +36,7 @@ func _ready():
 	mp.connect("network_peer_disconnected", self, "on_network_peer_disconnected")
 	load_local_profiles()
 	$VBoxContainer/Network/BtnLocal.call_deferred("grab_focus")
-	
+
 func load_local_profiles():
 	local_profiles = NetworkPlayer.load_all_local()
 	show_local_profiles()
@@ -203,7 +205,8 @@ func player_added(ap: AdaptedPlayer):
 	gardener.shorts_color = ap.second_color
 	gardener.can_run = false
 	vp.add_child(podest)
-	var cam_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/TemplateViewport/Camera
+	var vpc_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer
+	var cam_template := vpc_template.get_node("TemplateViewport/Camera")
 	var camera = Camera.new()
 	camera.transform = cam_template.transform
 	camera.name = "CamPodestScene#%d" % ap.index
@@ -213,10 +216,45 @@ func player_added(ap: AdaptedPlayer):
 	gardener.controller = ap.controller
 	gardener.controller.enable()
 	podest.get_node("LblController").text = "%s#%d" % [ap.controller.device_name, ap.controller.device + 1]
+	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
+	vpc.add_child(lbl_hint)
+	var anim = vpc_template.get_node("AnimationPlayer").duplicate()
+	vpc.add_child(anim)
+	on_connected_player_not_ready(gardener, anim, lbl_hint, ap, true)
+
+func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer, first_time: bool = false):
+	if first_time:
+		print("Player is not yet ready: ", ap.nickname)
+	else:
+		print("Player is no longer ready: ", ap.nickname)
+	lbl_hint.text = "Press OK/Jump\nwhen ready"
+	gardener.connect("ok_pressed", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
+	anim.play("PressOkGlow")
+	players_not_ready.append(ap.nw_player.global_id)
+	print("Players not ready: ", players_not_ready)
 	
+func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
+	print("Player is ready: ", ap.nickname)
+	lbl_hint.text = "Ready"
+	gardener.connect("cancel_pressed", self, "on_connected_player_not_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
+	anim.play("ReadyGlow")
+	print("Players not ready: ", players_not_ready)
+	var i = players_not_ready.find(ap.nw_player.global_id)
+	if i >= 0:
+		players_not_ready.remove(i)
+		if players_not_ready.empty():
+			start_game()
+		else:
+			print("Still waiting for:")
+			for p in players_not_ready:
+				print("  %s" % p)
+	else:
+		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nw_player.nickname, ap.nw_player.global_id])
 
 func leave_party(nw_player: NetworkPlayer):
 	for ap in Players.connected:
 		if ap.nw_player.global_id == nw_player.global_id:
 			Players.remove(ap)
-	
+
+func start_game():
+	print("TODO: Start Game")

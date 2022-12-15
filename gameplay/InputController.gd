@@ -10,7 +10,7 @@ export var device_name: String = ""
 const GAMEPAD = "Gamepad"
 const KEYBOARD = "Keyboard"
 
-const actions = [ "turn_left", "turn_right", "forward", "jump" ]
+const actions = [ "turn_left", "turn_right", "forward", "jump", "cancel" ]
 
 func initialize_from_event(event: InputEvent) -> void:
 	if event is InputEventMouse:
@@ -90,6 +90,15 @@ func enable():
 		dpad_event.pressed = true
 		InputMap.action_add_event(action_name, dpad_event)
 
+		# cancel
+		action_name = "%s#%d" % ["cancel", index]
+		InputMap.add_action(action_name)
+		dpad_event = InputEventJoypadButton.new()
+		dpad_event.button_index = JOY_SONY_CIRCLE
+		dpad_event.device = device
+		dpad_event.pressed = true
+		InputMap.action_add_event(action_name, dpad_event)
+
 	if type == KEYBOARD:
 
 		# turn_left
@@ -121,6 +130,14 @@ func enable():
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_SPACE
+		key_event.device = device
+		InputMap.action_add_event(action_name, key_event)
+
+		# cancel
+		action_name = "%s#%d" % ["cancel", index]
+		InputMap.add_action(action_name)
+		key_event = InputEventKey.new()
+		key_event.scancode = KEY_ESCAPE
 		key_event.device = device
 		InputMap.action_add_event(action_name, key_event)
 	

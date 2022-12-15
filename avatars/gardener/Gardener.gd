@@ -22,6 +22,9 @@ export var nickname: String = "<nickname>" setget set_nickname
 signal out_of_bounds
 signal spawned_seed(who)
 
+signal ok_pressed
+signal cancel_pressed
+
 export var direction = - Vector3.FORWARD # TODO Why is minus necessary?
 export var velocity = Vector3.ZERO
 
@@ -81,6 +84,11 @@ func handle_input(delta):
 			turn -= Input.get_action_strength("turn_left#%s" % controller.index)
 		if Input.is_action_pressed("jump#%s" % controller.index):
 			jump = true
+		if Input.is_action_just_pressed("jump#%s" % controller.index):
+			emit_signal("ok_pressed")
+		if Input.is_action_just_pressed("cancel#%s" % controller.index):
+			print("Cancel pressed")
+			emit_signal("cancel_pressed")
 		
 	# Turn
 	direction = direction.normalized()
