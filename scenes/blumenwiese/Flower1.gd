@@ -14,9 +14,9 @@ func _init():
 	logger.level = Logger.Level.DEBUG
 	logger.name += (get_instance_id() as String)
 	
-func initialize(position: Vector3, color: Color):
+func initialize(position: Vector3, blossom_color: Color):
 	self.translate(position)
-	self.color = color
+	self.color = blossom_color
 	logger.debug("Initialized flower at %s", transform.origin)
 	
 func begin_growing():

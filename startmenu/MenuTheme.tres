@@ -1,16 +1,18 @@
-[gd_resource type="Theme" load_steps=4 format=2]
+[gd_resource type="Theme" load_steps=2 format=2]
 
-[sub_resource type="Gradient" id=1]
-offsets = PoolRealArray( 0, 0.993378 )
-colors = PoolColorArray( 0.947266, 0.639479, 0.0814056, 1, 0, 0.057235, 0.658203, 1 )
-
-[sub_resource type="GradientTexture" id=2]
-gradient = SubResource( 1 )
-width = 1600
-
-[sub_resource type="StyleBoxTexture" id=3]
-texture = SubResource( 2 )
-region_rect = Rect2( 0, 0, 2048, 1 )
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 0 )
+border_width_left = 3
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color( 1, 0.501961, 0, 1 )
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 4
 
 [resource]
-Button/styles/focus = SubResource( 3 )
+Button/styles/focus = SubResource( 1 )
+Button/styles/pressed = null

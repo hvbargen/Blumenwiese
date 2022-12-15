@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://startmenu/NetStartMenu.gd" type="Script" id=1]
 [ext_resource path="res://startmenu/DlgCreateProfile.gd" type="Script" id=2]
 [ext_resource path="res://startmenu/LocalProfileButton.gd" type="Script" id=3]
 [ext_resource path="res://scenes/podest/Podest.tscn" type="PackedScene" id=4]
 [ext_resource path="res://startmenu/MenuTheme.tres" type="Theme" id=5]
+
+[sub_resource type="ButtonGroup" id=1]
+resource_name = "NetworkGameType"
 
 [node name="NetStartMenu" type="Control"]
 anchor_right = 1.0
@@ -103,6 +106,7 @@ margin_left = 104.0
 margin_right = 184.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 80, 80 )
+focus_neighbour_right = NodePath("../../../../Network/BtnLocal")
 text = "+"
 
 [node name="Network" type="HBoxContainer" parent="VBoxContainer"]
@@ -117,7 +121,12 @@ custom_constants/separation = 30
 margin_right = 120.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 120, 40 )
+focus_neighbour_left = NodePath("../../LocalProfiles/ScrollContainer/LocalProfiles/BtnAdd")
+focus_neighbour_right = NodePath("../BtnServer")
 size_flags_vertical = 3
+toggle_mode = true
+pressed = true
+group = SubResource( 1 )
 text = "Local Game"
 
 [node name="BtnServer" type="Button" parent="VBoxContainer/Network"]
@@ -125,7 +134,11 @@ margin_left = 150.0
 margin_right = 270.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 120, 40 )
+focus_neighbour_left = NodePath("../BtnLocal")
+focus_neighbour_right = NodePath("../BtnClient")
 size_flags_vertical = 3
+toggle_mode = true
+group = SubResource( 1 )
 text = "Server"
 
 [node name="BtnClient" type="Button" parent="VBoxContainer/Network"]
@@ -133,7 +146,11 @@ margin_left = 300.0
 margin_right = 420.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 120, 40 )
+focus_neighbour_left = NodePath("../BtnServer")
+focus_neighbour_right = NodePath("../TxtHost")
 size_flags_vertical = 3
+toggle_mode = true
+group = SubResource( 1 )
 text = "Client"
 
 [node name="Label" type="Label" parent="VBoxContainer/Network"]
@@ -151,6 +168,8 @@ margin_right = 800.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 200, 40 )
 rect_pivot_offset = Vector2( -622, -438 )
+focus_neighbour_left = NodePath("../BtnClient")
+focus_neighbour_right = NodePath("../TxtPort")
 text = "192.168.178.56"
 max_length = 50
 placeholder_text = "127.0.0.1"
@@ -170,6 +189,9 @@ margin_right = 980.0
 margin_bottom = 40.0
 rect_min_size = Vector2( 60, 30 )
 rect_pivot_offset = Vector2( -622, -438 )
+focus_neighbour_left = NodePath("../TxtHost")
+focus_neighbour_top = NodePath("../../LocalProfiles/ScrollContainer/LocalProfiles/BtnAdd")
+focus_neighbour_right = NodePath("../BtnLocal")
 max_length = 6
 placeholder_text = "9000"
 
