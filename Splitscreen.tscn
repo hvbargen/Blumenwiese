@@ -34,7 +34,7 @@ render_target_update_mode = 3
 [node name="Camera1" type="Camera" parent="VBoxContainer/ViewportContainer1/Viewport1"]
 current = true
 
-[node name="ColorRect" type="ColorRect" parent="VBoxContainer"]
+[node name="Spacer2" type="ColorRect" parent="VBoxContainer"]
 margin_top = 384.0
 margin_right = 1024.0
 margin_bottom = 388.0

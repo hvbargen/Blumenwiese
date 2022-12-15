@@ -15,8 +15,8 @@ export var gravity = 9.81 # m/s²
 export var accel = 7.0  # m/s²
 export var break_accel = 7.0 # m/s²
 export var jump_accel = 300.0 # m/s
-export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0)
-export var shorts_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0) setget set_shirt_color
+export var shorts_color: Color = Color(1.0, 1.0, 1.0, 1.0) setget set_shorts_color
 export var nickname: String = "<nickname>" setget set_nickname
 
 signal out_of_bounds
@@ -34,18 +34,25 @@ onready var run_state = RunState.INIT setget set_run_state
 
 var anim : AnimationPlayer
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
+func set_shirt_color(color: Color):
+	shirt_color = color
 	var chest: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Chest"
-	var bottom: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Bottom"
-	
 	var mat: Material = cloth_material.duplicate()
 	mat.albedo_color = shirt_color
 	chest.set_surface_material(0, mat)
-	mat = cloth_material.duplicate()
+
+func set_shorts_color(color: Color):
+	shorts_color = color
+	var bottom: MeshInstance = $"Pivot/Spatial/3DGodotRobot/RobotArmature/Skeleton/Bottom"
+	var mat = cloth_material.duplicate()
 	mat.albedo_color = shorts_color
 	bottom.set_surface_material(0, mat)
 	
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	set_shirt_color(shirt_color)
+	set_shorts_color(shorts_color)
+	set_nickname(nickname)
 	anim = get_node("AnimationPlayer")
 	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
 

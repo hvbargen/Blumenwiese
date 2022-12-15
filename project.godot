@@ -39,6 +39,7 @@ config/icon="res://icon.png"
 [autoload]
 
 Players="*res://gameplay/Players.gd"
+GameSettings="*res://gameplay/GameSettings.gd"
 
 [display]
 

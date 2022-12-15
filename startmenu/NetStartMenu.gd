@@ -257,4 +257,43 @@ func leave_party(nw_player: NetworkPlayer):
 			Players.remove(ap)
 
 func start_game():
-	print("TODO: Start Game")
+	var button_group = $VBoxContainer/Network/BtnLocal.group
+	var game_type = button_group.get_pressed_button().name.substr(3)
+	print("Start Game, game type:", game_type)
+	
+	var local_players = get_local_players()
+	
+	if game_type == "Local":
+		GameSettings.network = false
+	else:
+		GameSettings.network = true
+	if len(local_players) > 2:
+		push_error("Max. 2 players allowed on a single machine.")
+		return
+
+	GameSettings.local_players = local_players
+	GameSettings.num_viewports = len(local_players)
+	GameSettings.single_player_mode = (not GameSettings.network and len(local_players) == 1)
+	print ("Starting game:")
+	print("  Single_player=", GameSettings.single_player_mode)
+	print("  Network type=", game_type)
+	print("  # ViewPorts=", GameSettings.num_viewports)
+
+	var screen = preload("res://Splitscreen.tscn")
+	if get_tree().change_scene_to(screen) != OK:
+		push_error("Unable to start scene")
+		
+func get_local_players() -> Array:
+
+	# How many players are local players?
+	var local_players = []
+
+	print("Local players ")
+	for ap in Players.connected:
+		var local_peer_id = -1
+		if get_tree().has_network_peer():
+			local_peer_id = get_tree().get_network_unique_id()
+		if ap.peer_id == local_peer_id:
+			local_players.append(ap)
+			print("    ", ap.nickname)
+	return local_players
