@@ -6,6 +6,7 @@ const MAX_PLAYERS := 4
 const Logger = preload("res://util/Logger.gd")
 var logger: Logger
 
+var server_host := "192.168.178.56"
 var server_port : int = 9000
 
 var player_node_template: Control
@@ -26,9 +27,13 @@ func _init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	
 	player_node_template = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer
 	player_node_template.hide()
 	var mp = get_tree().multiplayer
+	$VBoxContainer/Network/TxtHost.text = server_host
+	$VBoxContainer/Network/TxtPort.text = server_port as String
+
 	mp.connect("server_disconnected", self, "on_server_disconnected")
 	mp.connect("connected_to_server", self, "on_connected_to_server")
 	mp.connect("connection_failed", self, "on_connection_failed")
@@ -80,18 +85,33 @@ func _input(event):
 
 func on_connected_to_server():
 	print("Connected to server!")
+	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connected"
+	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgreen
+	
+	# Tell everybody which players are connected locally here.
+	print("TODO Tell the others who is connected here...")
 
 func on_connection_failed():
 	print("Connection failed!")
+	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connection failed"
+	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
+	$VBoxContainer/Network/BtnClient.pressed = false
 	
 func on_network_peer_connected(id: int):
 	print("Peer connected: ", id)
+	# Now we want the peer to tell us which players are local there.
+	# But probably it doesn't work this way.
+	# Instead, the peer tells everybody who is connected there
+	# when it is connected.
 
 func on_network_peer_disconnected(id: int):
 	print("Peer disconnected: ", id)
 	
 func on_server_disconnected():
 	print("Server disconnected")
+	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server disconnected."
+	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
+	$VBoxContainer/Network/BtnClient.pressed = false
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
@@ -101,24 +121,43 @@ func _on_PlayerName_text_changed(new_text: String):
 	print("Name changed: ", new_text)
 
 func _on_BtnLocal_pressed():
-	print("TODO: Local Game")
+	var local_players = get_local_players()
+	for ap in Players.connected:
+		if not (local_players.has(ap)):
+			leave_party(ap.network_player)
+	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "(Local Game)"
+	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgray
 
 func _on_BtnServer_pressed():
-	var server_host = $VBoxContainer/Network/TxtHost.text
-	server_port = $VBoxContainer/Network/TxtHost.text as int
+	server_host = $VBoxContainer/Network/TxtHost.text
+	server_port = $VBoxContainer/Network/TxtPort.text as int
+	printerr("TODO: Automatic saving of server host and port!")
 	print("Starting Server ", server_host, ":", server_port, " -- Note that the host is actually ignored!")
 	var peer = NetworkedMultiplayerENet.new()
-	peer.create_server(server_port, MAX_PLAYERS)
-	get_tree().network_peer = peer
-	show_our_network_role()
+	# Check that server_host is valid
+	if server_host != "*":
+		print("TODO Check that host IP is valid.")
+	peer.set_bind_ip(server_host)
+	var error = peer.create_server(server_port, MAX_PLAYERS)
+	if error == OK:
+		get_tree().network_peer = peer
+		$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server listening on port %s" % server_port
+		$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgreen
+		show_our_network_role()
+	else:
+		$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Error starting server: %s" % error
+		$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
 
 func _on_BtnClient_pressed():
-	var server_host = $VBoxContainer/Network/TxtHost.text
-	server_port = $VBoxContainer/Network/TxtHost.text as int
+	server_host = $VBoxContainer/Network/TxtHost.text
+	server_port = $VBoxContainer/Network/TxtPort.text as int
+	printerr("TODO: Automatic saving of server host and port!")
 	print("Starting Client, connecting to ", server_host, ":", server_port)
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(server_host, server_port)
 	get_tree().network_peer = peer
+	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connecting to %s:%s ..." % [server_host, server_port]
+	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.orange
 	show_our_network_role()
 	
 func show_our_network_role():
@@ -252,9 +291,18 @@ func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTe
 		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nw_player.nickname, ap.nw_player.global_id])
 
 func leave_party(nw_player: NetworkPlayer):
+	var result = Players.connect("player_removed", self, "player_removed", [], CONNECT_ONESHOT)
+	print("Connect result: ", result)
 	for ap in Players.connected:
 		if ap.nw_player.global_id == nw_player.global_id:
 			Players.remove(ap)
+
+func player_removed(ap: AdaptedPlayer):
+	players_not_ready.erase(ap.nw_player.global_id)
+	var vpc_name = "PodestScene#%d" % ap.index
+	var vpc = $VBoxContainer/ConnectedPlayers.get_node(vpc_name)
+	$VBoxContainer/ConnectedPlayers.remove_child(vpc)
+	vpc.queue_free()
 
 func start_game():
 	var button_group = $VBoxContainer/Network/BtnLocal.group

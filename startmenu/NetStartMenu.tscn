@@ -243,10 +243,38 @@ focus_neighbour_right = NodePath("../BtnLocal")
 max_length = 6
 placeholder_text = "9000"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="NetworkInfo" type="HBoxContainer" parent="VBoxContainer"]
+margin_left = 150.0
 margin_top = 220.0
 margin_right = 980.0
 margin_bottom = 260.0
+
+[node name="LblServerStatus" type="Label" parent="VBoxContainer/NetworkInfo"]
+margin_top = 13.0
+margin_right = 83.0
+margin_bottom = 27.0
+text = "Server Status"
+
+[node name="ColorServerStatus" type="ColorRect" parent="VBoxContainer/NetworkInfo"]
+margin_left = 87.0
+margin_right = 327.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 240, 40 )
+color = Color( 0.192157, 0.192157, 0.192157, 1 )
+
+[node name="ServerStatus" type="Label" parent="VBoxContainer/NetworkInfo/ColorServerStatus"]
+margin_left = 18.0
+margin_top = 8.0
+margin_right = 218.0
+margin_bottom = 33.0
+rect_min_size = Vector2( 200, 0 )
+text = "<None>"
+valign = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+margin_top = 290.0
+margin_right = 980.0
+margin_bottom = 330.0
 custom_constants/separation = 20
 
 [node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/HBoxContainer"]
@@ -275,9 +303,9 @@ bbcode_text = "[color=grey]None[/color]"
 text = "None"
 
 [node name="ConnectedPlayers" type="HBoxContainer" parent="VBoxContainer"]
-margin_top = 290.0
+margin_top = 360.0
 margin_right = 980.0
-margin_bottom = 490.0
+margin_bottom = 560.0
 rect_min_size = Vector2( 600, 200 )
 size_flags_horizontal = 3
 custom_constants/separation = 20
@@ -368,18 +396,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 298.0
-margin_top = 112.0
-margin_right = 606.0
-margin_bottom = 524.0
+margin_left = 302.0
+margin_top = 116.0
+margin_right = 610.0
+margin_bottom = 528.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 616.0
-margin_top = 112.0
-margin_right = 924.0
-margin_bottom = 524.0
+margin_left = 620.0
+margin_top = 116.0
+margin_right = 928.0
+margin_bottom = 528.0
 edit_alpha = false
 presets_visible = false
 
