@@ -18,6 +18,7 @@ export var jump_accel = 300.0 # m/s
 export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0) setget set_shirt_color
 export var shorts_color: Color = Color(1.0, 1.0, 1.0, 1.0) setget set_shorts_color
 export var nickname: String = "<nickname>" setget set_nickname
+export var global_id: String
 
 signal out_of_bounds
 signal spawned_seed(who)
@@ -82,18 +83,19 @@ func handle_input(delta):
 	var turn = 0
 	var jump = false
 	var on_floor = is_on_floor()
-	if controller is InputController and controller.index >= 0:
-		if Input.is_action_pressed("forward#%s" % controller.index):
-			forward = Input.get_action_strength("forward#%s" % controller.index)
-		if Input.is_action_pressed("turn_right#%s" % controller.index):
-			turn += Input.get_action_strength("turn_right#%s" % controller.index)
-		if Input.is_action_pressed("turn_left#%s" % controller.index):
-			turn -= Input.get_action_strength("turn_left#%s" % controller.index)
-		if Input.is_action_pressed("jump#%s" % controller.index):
+	if controller is InputController and controller.type != InputController.REMOTE:
+		var local_id = controller.local_id
+		if Input.is_action_pressed("forward#%s" % local_id):
+			forward = Input.get_action_strength("forward#%s" % local_id)
+		if Input.is_action_pressed("turn_right#%s" % local_id):
+			turn += Input.get_action_strength("turn_right#%s" % local_id)
+		if Input.is_action_pressed("turn_left#%s" % local_id):
+			turn -= Input.get_action_strength("turn_left#%s" % local_id)
+		if Input.is_action_pressed("jump#%s" % local_id):
 			jump = true
-		if Input.is_action_just_pressed("jump#%s" % controller.index):
+		if Input.is_action_just_pressed("jump#%s" % local_id):
 			emit_signal("ok_pressed")
-		if Input.is_action_just_pressed("cancel#%s" % controller.index):
+		if Input.is_action_just_pressed("cancel#%s" % local_id):
 			print("Cancel pressed")
 			emit_signal("cancel_pressed")
 		

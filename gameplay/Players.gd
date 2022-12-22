@@ -2,33 +2,35 @@ extends Node
 
 signal player_added(ap)
 signal player_removed(ap)
-	
-var connected: Array = []   # of AdaptedPlayer
 
-var peers: Dictionary = {}  # of peer_id -> [AdaptedPlayer]
+var connected: Dictionary = {} # of global_id -> AdaptedPlayer
+
+var peers: Dictionary = {}  # of peer_id -> [global_id]
 
 func dump():
 	print("Dump of players connected:")
-	for p in connected:
+	for p in connected.values():
 		p.dump()
 
-func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController):
+func find(global_id: String) -> AdaptedPlayer:
+	return connected[global_id]
+
+func add(nw_player, peer_id: int, controller: InputController):
 	print("Before add %s:" % nw_player)
 	dump()
+	var global_id = nw_player.global_id
 	var ap = AdaptedPlayer.new(nw_player, peer_id, controller)
 	ap.nw_player = nw_player
 	ap.peer_id = peer_id
 	ap.nickname = nw_player.nickname
-	ap.index = len(connected)
-	controller.index = ap.index
 	if not (peer_id in peers):
-		peers[peer_id] = [ap]
+		peers[peer_id] = [global_id]
 	else:
-		peers[peer_id].append(ap)
+		peers[peer_id].append(global_id)
 	
 	# TODO Try to choose a unique color
 	var existing_colors: Array = []
-	for apc in connected:
+	for apc in connected.values():
 		existing_colors.append(apc.color)
 	if not (ap.nw_player.fav_color1 in existing_colors):
 		ap.color = ap.nw_player.fav_color1
@@ -39,25 +41,23 @@ func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController):
 	else:
 		ap.color = Color.from_hsv(randf(), rand_range(0.8, 1), rand_range(0.8, 1), 1)
 		print("Must choose a random color for %s" % ap.nickname)
-	connected.append(ap)
+	connected[global_id] = ap
 	print("After add:")
 	dump()
 	emit_signal("player_added", ap)
+	return ap
 
 # Remove a player.
-# The following player will move one position up.
-func remove(ap: AdaptedPlayer):
-	print("Before remove %s:" % ap)
+func remove(global_id: String):
+	print("Before remove %s:" % global_id)
 	dump()
-	var index = ap.index
-	var peer_id = ap.nw_player.peer_id
+	var ap = find(global_id)
+	if not (connected.erase(global_id)):
+		printerr("Trying to remove player who is not connected: ", global_id)
+		return
+	var peer_id = ap.peer_id
 	# Remove from peers
-	if not peers[peer_id].erase(ap):
-		printerr("Internal error erasing player %s" % ap)
-	# Remove from connected and re-index the rest of the connected players		
-	connected.remove(index)
-	for i in range(index, len(connected)):
-		connected[i].index -= 1
+	peers[peer_id].erase(global_id)
 	print("After remove:")
 	dump()
 	emit_signal("player_removed", ap)

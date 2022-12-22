@@ -17,7 +17,9 @@ var current_input_controller: InputController = InputController.new()
 
 var podest_scene := preload("res://scenes/podest/Podest.tscn")
 
-var players_not_ready: Array = [] # of NetworkPlayer
+var players_not_ready: Array = [] # of global_id
+
+var podest_vpcs: Dictionary = {} # of global_id -> ViewPortContainer.name
 
 func _init():
 	._init()
@@ -90,12 +92,14 @@ func on_connected_to_server():
 	
 	# Tell everybody which players are connected locally here.
 	print("TODO Tell the others who is connected here...")
+	announce_local_players()
 
 func on_connection_failed():
 	print("Connection failed!")
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connection failed"
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
 	$VBoxContainer/Network/BtnClient.pressed = false
+	get_tree().network_peer = null
 	
 func on_network_peer_connected(id: int):
 	print("Peer connected: ", id)
@@ -112,6 +116,7 @@ func on_server_disconnected():
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server disconnected."
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
 	$VBoxContainer/Network/BtnClient.pressed = false
+	get_tree().network_peer = null
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
@@ -121,12 +126,20 @@ func _on_PlayerName_text_changed(new_text: String):
 	print("Name changed: ", new_text)
 
 func _on_BtnLocal_pressed():
+	if get_tree().network_peer != null:
+		print("TODO: Tell the others that we're leaving!")
+		rpc("Leaving the network")
+		get_tree().network_peer = null
+	
 	var local_players = get_local_players()
 	for ap in Players.connected:
 		if not (local_players.has(ap)):
 			leave_party(ap.network_player)
+		else:
+			ap.peer_id = -1
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "(Local Game)"
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgray
+	get_tree().network_peer = null
 
 func _on_BtnServer_pressed():
 	server_host = $VBoxContainer/Network/TxtHost.text
@@ -141,6 +154,13 @@ func _on_BtnServer_pressed():
 	var error = peer.create_server(server_port, MAX_PLAYERS)
 	if error == OK:
 		get_tree().network_peer = peer
+		var local_peer_id = get_tree().get_network_unique_id()
+		for ap in Players.connected:
+			if ap.peer_id > 0 and ap.peer_id != local_peer_id:
+				leave_party(ap.network_player)
+			else:
+				ap.peer_id = local_peer_id
+	
 		$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server listening on port %s" % server_port
 		$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgreen
 		show_our_network_role()
@@ -156,6 +176,12 @@ func _on_BtnClient_pressed():
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(server_host, server_port)
 	get_tree().network_peer = peer
+	var local_peer_id = get_tree().get_network_unique_id()
+	for ap in Players.connected:
+		if ap.peer_id > 0 and ap.peer_id != local_peer_id:
+			leave_party(ap.network_player)
+		else:
+			ap.peer_id = local_peer_id
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connecting to %s:%s ..." % [server_host, server_port]
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.orange
 	show_our_network_role()
@@ -206,7 +232,7 @@ func join_party(nw_player: NetworkPlayer):
 		$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
 		return
 	# if controller is already in use, player cannot join
-	for ap in Players.connected:
+	for ap in Players.connected.values():
 		var ap_controller = ap.controller as InputController
 		if ap_controller.type == current_input_controller.type and ap_controller.device == current_input_controller.device:
 			var msg = "The current controller %s#%s is already used by %s!" % [current_input_controller.device_name, current_input_controller.device + 1, ap.nickname]
@@ -218,37 +244,42 @@ func join_party(nw_player: NetworkPlayer):
 	var peer_id = -1
 	if get_tree().network_peer is NetworkedMultiplayerPeer:
 		peer_id = get_tree().get_network_unique_id()
-	Players.add(nw_player, peer_id, controller)
+	var ap = Players.add(nw_player, peer_id, controller)
+	if is_local(ap):
+		announce_local_players()
 	
 func player_added(ap: AdaptedPlayer):
 	var container = $VBoxContainer/ConnectedPlayers
 	var height := 200
 	var width := 150
 	var vpc := ViewportContainer.new()
+	var index = container.get_child_count()
 	vpc.rect_min_size.x = width
 	vpc.rect_min_size.y = height
-	vpc.name = "PodestScene#%d" % ap.index
+	vpc.name = "PodestScene#%d" % index
+	podest_vpcs[ap.nw_player.global_id] = vpc.name
 	vpc.visible = true
 	container.add_child(vpc)
 	var vp := Viewport.new()
 	vp.size.x = width
 	vp.size.y = height
 	vp.own_world = true
-	vp.name = "VPPodestScene#%d" % ap.index
+	vp.name = "VPPodestScene#%d" % index
 	vpc.add_child(vp)
 	var podest = podest_scene.instance()
-	podest.name = "ScnPodestScene#%d" % ap.index
+	podest.name = "ScnPodestScene#%d" % index
 	var gardener = podest.get_node("Gardener")
 	gardener.nickname = ap.nw_player.nickname
 	gardener.shirt_color = ap.color
 	gardener.shorts_color = ap.second_color
+	gardener.global_id = ap.nw_player.global_id
 	gardener.can_run = false
 	vp.add_child(podest)
 	var vpc_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer
 	var cam_template := vpc_template.get_node("TemplateViewport/Camera")
 	var camera = Camera.new()
 	camera.transform = cam_template.transform
-	camera.name = "CamPodestScene#%d" % ap.index
+	camera.name = "CamPodestScene#%d" % index
 	vp.add_child(camera)
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
@@ -268,9 +299,14 @@ func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: Ri
 		print("Player is no longer ready: ", ap.nickname)
 	lbl_hint.text = "Press OK/Jump\nwhen ready"
 	gardener.connect("ok_pressed", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
+	gardener.connect("cancel_pressed", self, "on_connected_player_cancel", [ap], CONNECT_ONESHOT)
 	anim.play("PressOkGlow")
 	players_not_ready.append(ap.nw_player.global_id)
 	print("Players not ready: ", players_not_ready)
+
+func on_connected_player_cancel(ap: AdaptedPlayer):
+	print("Player cancelled: ", ap.nickname)
+	leave_party(ap.nw_player)
 	
 func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
 	print("Player is ready: ", ap.nickname)
@@ -293,16 +329,18 @@ func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTe
 func leave_party(nw_player: NetworkPlayer):
 	var result = Players.connect("player_removed", self, "player_removed", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
-	for ap in Players.connected:
-		if ap.nw_player.global_id == nw_player.global_id:
-			Players.remove(ap)
+	Players.remove(nw_player.global_id)
+	
+func find_podest_vpc(global_id: String):
+	return $VBoxContainer/ConnectedPlayers.get_node(podest_vpcs[global_id])	
 
 func player_removed(ap: AdaptedPlayer):
 	players_not_ready.erase(ap.nw_player.global_id)
-	var vpc_name = "PodestScene#%d" % ap.index
-	var vpc = $VBoxContainer/ConnectedPlayers.get_node(vpc_name)
+	var vpc = find_podest_vpc(ap.nw_player.global_id)
 	$VBoxContainer/ConnectedPlayers.remove_child(vpc)
 	vpc.queue_free()
+	if is_local(ap):
+		announce_local_players()
 
 func start_game():
 	var button_group = $VBoxContainer/Network/BtnLocal.group
@@ -330,18 +368,77 @@ func start_game():
 	var screen = preload("res://Splitscreen.tscn")
 	if get_tree().change_scene_to(screen) != OK:
 		push_error("Unable to start scene")
-		
-func get_local_players() -> Array:
 
+func is_local(ap: AdaptedPlayer) -> bool:
+	var local_peer_id = -1
+	if get_tree().has_network_peer():
+		local_peer_id = get_tree().get_network_unique_id()
+	return ap.peer_id == local_peer_id
+			
+func get_local_players() -> Array:
 	# How many players are local players?
 	var local_players = []
-
 	print("Local players ")
-	for ap in Players.connected:
-		var local_peer_id = -1
-		if get_tree().has_network_peer():
-			local_peer_id = get_tree().get_network_unique_id()
-		if ap.peer_id == local_peer_id:
+	for ap in Players.connected.values():
+		if is_local(ap):
 			local_players.append(ap)
 			print("    ", ap.nickname)
 	return local_players
+
+func announce_local_players():
+	if not get_tree().has_network_peer():
+		return
+	var announced_players = []
+	for ap in get_local_players():
+		var msg := EnterLobby.new()
+		msg.nickname = ap.nickname
+		msg.global_id = ap.nw_player.global_id
+		msg.peer_id = ap.peer_id
+		msg.color = ap.color
+		msg.second_color = ap.second_color
+		announced_players.append(msg.to_array())
+	print("Announcing local players to the other peers: ", announced_players)
+	rpc("announce_players", announced_players)
+	
+func parse_announced_player(msg: EnterLobby, peer_id) -> AdaptedPlayer:
+	assert(msg.peer_id == peer_id)
+	var nw_player = NetworkPlayer.new()
+	nw_player.nickname = msg.nickname
+	nw_player.global_id = msg.global_id
+	var controller = InputController.new()
+	controller.type = InputController.REMOTE
+	controller.device = peer_id
+	controller.device_name = "[Remote]"
+	var ap = AdaptedPlayer.new(nw_player, peer_id, controller)
+	ap.nickname = msg.nickname
+	ap.color = msg.color
+	ap.second_color = msg.second_color
+	return ap
+
+remote func announce_players(announced_players):
+
+	var peer_id = get_tree().get_rpc_sender_id()
+	#if peer_id == get_tree().get_network_unique_id():
+	#	print("Ignored RPC call from self: %s", "announce_players")
+	#	return
+	print("Players announced from peer #%d: %s" % [peer_id, len(announced_players)])
+	# Remove players that are still in our list but not no longer on the peer's list
+	var remote_global_ids = []
+	var previous_global_ids = []
+	if Players.peers.has(peer_id):
+		previous_global_ids = Players.peers[peer_id]
+	var ap_array = []
+	for p in announced_players:
+		var ap = parse_announced_player(EnterLobby.new(p), peer_id)
+		ap_array.append(ap)
+		remote_global_ids.append(ap.nw_player.global_id)
+	for global_id in previous_global_ids:
+		if not (global_id in remote_global_ids):
+			Players.remove(global_id)
+	# Add players that are on the peer's list, but not on our list
+	for remote_ap in ap_array:
+		if not (remote_ap.nw_player.global_id in previous_global_ids):
+			var ap = Players.add(remote_ap.nw_player, peer_id, remote_ap.controller)
+			player_added(ap)
+		else:
+			print("TODO: Handle editing of remote players, eg by version numbering?")

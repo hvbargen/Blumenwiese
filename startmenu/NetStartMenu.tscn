@@ -244,7 +244,6 @@ max_length = 6
 placeholder_text = "9000"
 
 [node name="NetworkInfo" type="HBoxContainer" parent="VBoxContainer"]
-margin_left = 150.0
 margin_top = 220.0
 margin_right = 980.0
 margin_bottom = 260.0
@@ -396,18 +395,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 302.0
-margin_top = 116.0
-margin_right = 610.0
-margin_bottom = 528.0
+margin_left = 334.0
+margin_top = 148.0
+margin_right = 642.0
+margin_bottom = 560.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 620.0
-margin_top = 116.0
-margin_right = 928.0
-margin_bottom = 528.0
+margin_left = 652.0
+margin_top = 148.0
+margin_right = 960.0
+margin_bottom = 560.0
 edit_alpha = false
 presets_visible = false
 
