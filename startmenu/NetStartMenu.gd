@@ -101,12 +101,24 @@ func on_connection_failed():
 	$VBoxContainer/Network/BtnClient.pressed = false
 	get_tree().network_peer = null
 	
-func on_network_peer_connected(id: int):
-	print("Peer connected: ", id)
+func on_network_peer_connected(peer_id: int):
+	print("Peer connected: ", peer_id)
 	# Now we want the peer to tell us which players are local there.
 	# But probably it doesn't work this way.
 	# Instead, the peer tells everybody who is connected there
 	# when it is connected.
+	if get_tree().get_network_unique_id() == 1 and peer_id > 1:
+		var existing_players = []
+		for ap in Players.connected.values():
+			if ap.peer_id != peer_id:
+				var msg := EnterLobby.new()
+				msg.nickname = ap.nickname
+				msg.global_id = ap.nw_player.global_id
+				msg.peer_id = ap.peer_id
+				msg.color = ap.color
+				msg.second_color = ap.second_color
+				existing_players.append(msg.to_array())
+		rpc_id(peer_id, "announce_players", existing_players)
 
 func on_network_peer_disconnected(id: int):
 	print("Peer disconnected: ", id)
@@ -240,7 +252,10 @@ func join_party(nw_player: NetworkPlayer):
 			return
 	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
-	var controller = current_input_controller.duplicate()
+	var controller = InputController.new()
+	controller.type = current_input_controller.type
+	controller.device = current_input_controller.device
+	controller.device_name = current_input_controller.device_name
 	var peer_id = -1
 	if get_tree().network_peer is NetworkedMultiplayerPeer:
 		peer_id = get_tree().get_network_unique_id()
@@ -284,7 +299,8 @@ func player_added(ap: AdaptedPlayer):
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
 	gardener.controller = ap.controller
-	gardener.controller.enable()
+	if gardener.controller.type != InputController.REMOTE:
+		gardener.controller.enabled = true
 	podest.get_node("LblController").text = "%s#%d" % [ap.controller.device_name, ap.controller.device + 1]
 	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
 	vpc.add_child(lbl_hint)
@@ -401,7 +417,6 @@ func announce_local_players():
 	rpc("announce_players", announced_players)
 	
 func parse_announced_player(msg: EnterLobby, peer_id) -> AdaptedPlayer:
-	assert(msg.peer_id == peer_id)
 	var nw_player = NetworkPlayer.new()
 	nw_player.nickname = msg.nickname
 	nw_player.global_id = msg.global_id
@@ -411,6 +426,9 @@ func parse_announced_player(msg: EnterLobby, peer_id) -> AdaptedPlayer:
 	controller.device_name = "[Remote]"
 	var ap = AdaptedPlayer.new(nw_player, peer_id, controller)
 	ap.nickname = msg.nickname
+	# Fixme Color handling is somewhat broken
+	nw_player.fav_color1 = msg.color
+	nw_player.fav_color2 = msg.second_color
 	ap.color = msg.color
 	ap.second_color = msg.second_color
 	return ap
@@ -442,3 +460,9 @@ remote func announce_players(announced_players):
 			player_added(ap)
 		else:
 			print("TODO: Handle editing of remote players, eg by version numbering?")
+
+remotesync func assign_in_game_uids(d: Dictionary):
+	for global_id in d.keys():
+		var ap = Players.find(global_id)
+		if ap != null:
+			ap.in_game_uid = d[global_id]

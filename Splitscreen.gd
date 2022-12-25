@@ -43,9 +43,8 @@ func _ready():
 			avatars[i].shirt_color = ap.color
 			avatars[i].shorts_color = ap.second_color
 		
-			# ToDo: Setup controls
-			ap.controller.enable()
 			avatars[i].controller = ap.controller
+			ap.controller.enabled = true
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

@@ -58,7 +58,8 @@ func _ready():
 	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
 
 func _physics_process(delta):
-	handle_input(delta)
+	var input_state = get_input()
+	handle_input(delta, input_state)
 
 func set_run_state(new_state):
 	print("set_run_state ", new_state)
@@ -78,31 +79,37 @@ func set_run_state(new_state):
 			RunState.SLIDING: 
 				anim.play("GroundSlide")
 
-func handle_input(delta):
-	var forward = 0
-	var turn = 0
-	var jump = false
-	var on_floor = is_on_floor()
-	if controller is InputController and controller.type != InputController.REMOTE:
-		var local_id = controller.local_id
-		if Input.is_action_pressed("forward#%s" % local_id):
-			forward = Input.get_action_strength("forward#%s" % local_id)
-		if Input.is_action_pressed("turn_right#%s" % local_id):
-			turn += Input.get_action_strength("turn_right#%s" % local_id)
-		if Input.is_action_pressed("turn_left#%s" % local_id):
-			turn -= Input.get_action_strength("turn_left#%s" % local_id)
-		if Input.is_action_pressed("jump#%s" % local_id):
-			jump = true
-		if Input.is_action_just_pressed("jump#%s" % local_id):
+func get_input() -> InputState:
+	var state = InputState.new()
+	state.forward = 0
+	state.turn_right = 0
+	state.jump_pressed = false
+	state.cancel_pressed = false	
+	if controller is InputController and controller.enabled:
+		var in_game_uid = controller.in_game_uid
+		if Input.is_action_pressed("forward#%s" % in_game_uid):
+			state.forward = Input.get_action_strength("forward#%s" % in_game_uid)
+		if Input.is_action_pressed("turn_right#%s" % in_game_uid):
+			state.turn_right = Input.get_action_strength("turn_right#%s" % in_game_uid) - Input.get_action_strength("turn_left#%s" % in_game_uid)
+		if Input.is_action_pressed("jump#%s" % in_game_uid):
+			state.jump_pressed = true
+		if Input.is_action_just_pressed("jump#%s" % in_game_uid):
+			state.ok_just_pressed = true
 			emit_signal("ok_pressed")
-		if Input.is_action_just_pressed("cancel#%s" % local_id):
-			print("Cancel pressed")
+		if Input.is_action_just_pressed("cancel#%s" % in_game_uid):
+			state.cancel_just_pressed = true
 			emit_signal("cancel_pressed")
+		elif controller.type == InputController.REMOTE:
+			print("TODO apply input from remote controllers?")
+	return state
+
+func handle_input(delta: float, input_state: InputState):
+	var on_floor = is_on_floor()
 		
 	# Turn
 	direction = direction.normalized()
-	if turn != 0:
-		var angle = - turn * turn_speed * delta
+	if input_state.turn_right != 0:
+		var angle = - input_state.turn_right * turn_speed * delta
 		rotate_y(angle)
 		direction = direction.rotated(Vector3.UP, angle)
 
@@ -118,12 +125,12 @@ func handle_input(delta):
 	velocity2d.y = 0
 
 	if on_floor:	
-		if forward > 0:
+		if input_state.forward > 0:
 			# Run / Accelerate
 			if not (run_state in [RunState.RUNNING, RunState.SPRINTING]):
 				set_run_state(RunState.RUNNING)
 			if can_run:
-				delta_velocity2d = direction2d * delta * accel 
+				delta_velocity2d = direction2d * delta * accel * input_state.forward 
 				velocity2d += delta_velocity2d
 				velocity2d = velocity2d.limit_length(max_speed)
 				if velocity2d.length_squared() > 0.8 * (max_speed * max_speed) and run_state != RunState.SPRINTING:
@@ -140,11 +147,11 @@ func handle_input(delta):
 				velocity2d = Vector3.ZERO
 				set_run_state(RunState.IDLE)
 				print("Stopped!")
-				if forward < 0:
+				if input_state.forward < 0:
 					pass # TODO 180° Turn
 			else:
 				velocity2d += delta_velocity2d
-		if jump:
+		if input_state.jump_pressed:
 			set_run_state(RunState.JUMPING)	
 			velocity.y = jump_accel * delta
 			emit_signal("spawned_seed", self)
@@ -153,7 +160,7 @@ func handle_input(delta):
 			velocity.x = velocity2d.x
 			velocity.z = velocity2d.z
 
-	if not jump:
+	if not input_state.jump_pressed:
 		# Gravity
 		velocity.y -= gravity * delta
 	

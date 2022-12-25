@@ -5,7 +5,8 @@ class_name InputController
 export var type: String
 export var device: int
 export var device_name: String = ""
-export var local_id: String setget, get_local_id
+export var in_game_uid: String = ""
+export var enabled: bool = false setget set_enable
 
 const GAMEPAD = "Gamepad"
 const KEYBOARD = "Keyboard"
@@ -29,23 +30,34 @@ func initialize_from_event(event: InputEvent) -> void:
 	else:
 		push_error("Cannot use input event for controller initialization: %s" % event)
 
-func get_local_id() -> String:
-	return type + (device as String)
-	
+func set_in_game_uid(new_in_game_uid: String):
+	var was_enabled = enabled
+	if was_enabled:
+		disable()
+	in_game_uid = new_in_game_uid
+	if was_enabled:
+		set_enable(true)
+		
 func disable():
+	if in_game_uid.empty():
+		return
 	for action in actions:
-		var action_name = "%s#%s" % [action, get_local_id()]
+		var action_name = "%s#%s" % [action, in_game_uid]
 		if InputMap.has_action(action_name):
 			InputMap.erase_action(action_name)
 
-func enable():
+func set_enable(on: bool = true):
+	if (on):
+		assert(not in_game_uid.empty())
 	disable()
+	enabled = on
+	if not on:
+		return
 
-	var _local_id = get_local_id()
 	if type == GAMEPAD:
 
 		# turn_left
-		var action_name = "%s#%s" % ["turn_left", _local_id]
+		var action_name = "%s#%s" % ["turn_left", in_game_uid]
 		InputMap.add_action(action_name)
 		var dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_LEFT
@@ -59,7 +71,7 @@ func enable():
 		InputMap.action_add_event(action_name, stick_event)
 
 		# turn_right
-		action_name = "%s#%s" % ["turn_right", _local_id]
+		action_name = "%s#%s" % ["turn_right", in_game_uid]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_RIGHT
@@ -73,7 +85,7 @@ func enable():
 		InputMap.action_add_event(action_name, stick_event)
 
 		# forward
-		action_name = "%s#%s" % ["forward", _local_id]
+		action_name = "%s#%s" % ["forward", in_game_uid]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_UP
@@ -87,7 +99,7 @@ func enable():
 		InputMap.action_add_event(action_name, stick_event)
 
 		# jump
-		action_name = "%s#%s" % ["jump", _local_id]
+		action_name = "%s#%s" % ["jump", in_game_uid]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_SONY_X
@@ -96,7 +108,7 @@ func enable():
 		InputMap.action_add_event(action_name, dpad_event)
 
 		# cancel
-		action_name = "%s#%s" % ["cancel", _local_id]
+		action_name = "%s#%s" % ["cancel", in_game_uid]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_SONY_CIRCLE
@@ -107,7 +119,7 @@ func enable():
 	if type == KEYBOARD:
 
 		# turn_left
-		var action_name = "%s#%s" % ["turn_left", _local_id]
+		var action_name = "%s#%s" % ["turn_left", in_game_uid]
 		InputMap.add_action(action_name)
 		var key_event = InputEventKey.new()
 		key_event.scancode = KEY_LEFT
@@ -115,7 +127,7 @@ func enable():
 		InputMap.action_add_event(action_name, key_event)
 
 		# turn_right
-		action_name = "%s#%s" % ["turn_right", _local_id]
+		action_name = "%s#%s" % ["turn_right", in_game_uid]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_RIGHT
@@ -123,7 +135,7 @@ func enable():
 		InputMap.action_add_event(action_name, key_event)
 
 		# forward
-		action_name = "%s#%s" % ["forward", _local_id]
+		action_name = "%s#%s" % ["forward", in_game_uid]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_UP
@@ -131,7 +143,7 @@ func enable():
 		InputMap.action_add_event(action_name, key_event)
 
 		# jump
-		action_name = "%s#%s" % ["jump", _local_id]
+		action_name = "%s#%s" % ["jump", in_game_uid]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_SPACE
@@ -139,7 +151,7 @@ func enable():
 		InputMap.action_add_event(action_name, key_event)
 
 		# cancel
-		action_name = "%s#%s" % ["cancel", _local_id]
+		action_name = "%s#%s" % ["cancel", in_game_uid]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_ESCAPE
