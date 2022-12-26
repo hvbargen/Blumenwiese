@@ -234,10 +234,9 @@ func _on_DummyPlayer_long_pressed(global_id):
 
 func _on_DummyPlayer_clicked(global_id):
 	var nw_player = find_local_profile(global_id)
-	print("Button clicked", nw_player.nickname)
-	join_party(nw_player)
+	join_party(nw_player, true)
 
-func join_party(nw_player: NetworkPlayer):
+func join_party(nw_player: NetworkPlayer, focus: bool = true):
 	# if no controller is selected, player cannot join
 	if current_input_controller.device_name.empty():
 		var msg = "Please use the keyboard or a gamepad - using the mouse is not supported."
@@ -250,7 +249,7 @@ func join_party(nw_player: NetworkPlayer):
 			var msg = "The current controller %s#%s is already used by %s!" % [current_input_controller.device_name, current_input_controller.device + 1, ap.nickname]
 			$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
 			return
-	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
+	var result = Players.connect("player_added", self, "player_added", [focus], CONNECT_ONESHOT)
 	print("Connect result: ", result)
 	var controller = InputController.new()
 	controller.type = current_input_controller.type
@@ -263,7 +262,7 @@ func join_party(nw_player: NetworkPlayer):
 	if is_local(ap):
 		announce_local_players()
 	
-func player_added(ap: AdaptedPlayer):
+func player_added(ap: AdaptedPlayer, focus: bool = false):
 	var container = $VBoxContainer/ConnectedPlayers
 	var height := 200
 	var width := 150
@@ -274,7 +273,10 @@ func player_added(ap: AdaptedPlayer):
 	vpc.name = "PodestScene#%d" % index
 	podest_vpcs[ap.nw_player.global_id] = vpc.name
 	vpc.visible = true
+	vpc.set_focus_mode(Control.FOCUS_ALL)
 	container.add_child(vpc)
+	if focus:
+		vpc.grab_focus()
 	var vp := Viewport.new()
 	vp.size.x = width
 	vp.size.y = height
