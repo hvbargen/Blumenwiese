@@ -3,7 +3,7 @@
 [ext_resource path="res://scenes/blumenwiese/Main.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Splitscreen.gd" type="Script" id=2]
 
-[node name="Node" type="Node"]
+[node name="Splitscreen" type="Node"]
 script = ExtResource( 2 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]

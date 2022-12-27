@@ -1,10 +1,8 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://scenes/blumenwiese/Blattkranz.gd" type="Script" id=1]
 [ext_resource path="res://scenes/blumenwiese/GreenLeafShader.tres" type="Material" id=2]
-[ext_resource path="res://scenes/blumenwiese/OurWorldEnv.tres" type="Environment" id=3]
 [ext_resource path="res://scenes/blumenwiese/Leafs1.gd" type="Script" id=4]
-
 
 [sub_resource type="QuadMesh" id=3]
 material = ExtResource( 2 )
@@ -22,7 +20,7 @@ material = ExtResource( 2 )
 transform_format = 1
 instance_count = 5
 mesh = SubResource( 6 )
-transform_array = PoolVector3Array( 0.199544, -0.684882, 0.0892555, 0, 0.398437, 0.275159, -0.224014, -0.610069, 0.0795057, -0.342441, 0.499219, -0.305035, -0.151387, -0.79185, 0.103196, 0, 0.398437, 0.275159, -0.259002, 0.46284, -0.0603184, -0.395925, 0.499219, 0.23142, -0.293106, 0.195492, -0.0254769, 0, 0.398437, 0.275159, 0.0639422, 0.89612, -0.116785, 0.0977458, 0.499219, 0.44806, -0.0297622, 0.912671, -0.118942, 0, 0.398437, 0.275159, 0.29852, 0.0909927, -0.0118584, 0.456335, 0.499219, 0.0454963, 0.274712, 0.36857, -0.0480329, 0, 0.398437, 0.275159, 0.120553, -0.839883, 0.109456, 0.184285, 0.499219, -0.419942 )
+transform_array = PoolVector3Array( 0.250004, 0.518317, -0.0576147, 0, 0.347441, 0.281311, 0.165826, -0.78143, 0.0868616, 0.259158, 0.473721, -0.390715, 0.234965, -0.583015, 0.0648063, 0, 0.347441, 0.281311, -0.186525, -0.734424, 0.0816365, -0.291508, 0.473721, -0.367212, -0.104787, -0.87864, 0.0976672, 0, 0.347441, 0.281311, -0.281104, 0.327531, -0.0364074, -0.43932, 0.473721, 0.163765, -0.299727, 0.0399856, -0.00444469, 0, 0.347441, 0.281311, 0.0127926, 0.936849, -0.104138, 0.0199928, 0.473721, 0.468424, -0.0804542, 0.903353, -0.100414, 0, 0.347441, 0.281311, 0.289011, 0.251473, -0.0279531, 0.451676, 0.473721, 0.125737 )
 
 [node name="Leafs1" type="Spatial"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0227097, 0 )
@@ -54,18 +52,6 @@ __meta__ = {
 }
 anzahl = 5
 winkel_deg = 70.593
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = ExtResource( 3 )
-
-[node name="DirectionalLight" type="DirectionalLight" parent="WorldEnvironment"]
-transform = Transform( 0.404682, 0.597639, -0.692142, -0.301652, 0.801765, 0.515925, 0.863272, 1.28638e-08, 0.504739, -5, 4, 0 )
-visible = false
-light_color = Color( 0.964706, 0.960784, 0.862745, 1 )
-shadow_enabled = true
-
-[node name="Camera" type="Camera" parent="WorldEnvironment"]
-transform = Transform( 1, 0, 0, 0, 0.955957, 0.293506, 0, -0.293506, 0.955957, -0.375911, 1.40957, 1.64954 )
 
 [node name="Tween" type="Tween" parent="."]
 

@@ -1,10 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://scenes/blumenwiese/BlossomLeafShader.tres" type="Material" id=1]
-[ext_resource path="res://scenes/blumenwiese/OurWorldEnv.tres" type="Environment" id=2]
 [ext_resource path="res://scenes/blumenwiese/BlossomRing.gd" type="Script" id=3]
 [ext_resource path="res://scenes/blumenwiese/Blossom.gd" type="Script" id=4]
-
 
 [sub_resource type="QuadMesh" id=1]
 material = ExtResource( 1 )
@@ -16,7 +14,7 @@ material = ExtResource( 1 )
 transform_format = 1
 instance_count = 4
 mesh = SubResource( 2 )
-transform_array = PoolVector3Array( 0.230125, 0.62172, -0.0474817, 0, 0.246703, 0.290727, 0.192465, -0.743372, 0.0567725, 0.31086, 0.123352, -0.371686, 0.192465, -0.743372, 0.0567725, 0, 0.246703, 0.290727, -0.230125, -0.62172, 0.0474817, -0.371686, 0.123352, -0.31086, -0.230125, -0.62172, 0.0474817, 0, 0.246703, 0.290727, -0.192465, 0.743372, -0.0567725, -0.31086, 0.123352, 0.371686, -0.192465, 0.743372, -0.0567725, 0, 0.246703, 0.290727, 0.230125, 0.621719, -0.0474817, 0.371686, 0.123352, 0.31086 )
+transform_array = PoolVector3Array( 0.208089, -0.711876, 0.0330145, 0, 0.152775, 0.296478, -0.2161, -0.685487, 0.0317907, -0.355938, 0.0763873, -0.342743, -0.2161, -0.685487, 0.0317907, 0, 0.152775, 0.296478, -0.208089, 0.711876, -0.0330145, -0.342743, 0.0763873, 0.355938, -0.208089, 0.711876, -0.0330145, 0, 0.152775, 0.296478, 0.2161, 0.685487, -0.0317907, 0.355938, 0.0763873, 0.342743, 0.2161, 0.685487, -0.0317907, 0, 0.152775, 0.296478, 0.208089, -0.711876, 0.0330145, 0.342744, 0.0763873, -0.355938 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 4 )
@@ -42,18 +40,6 @@ __meta__ = {
 }
 anzahl = 4
 winkel_deg = 80.0
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Blossom"]
-environment = ExtResource( 2 )
-
-[node name="DirectionalLight" type="DirectionalLight" parent="Blossom/WorldEnvironment"]
-transform = Transform( 0.404682, 0.597639, -0.692142, -0.301652, 0.801765, 0.515925, 0.863272, 1.28638e-08, 0.504739, -5, 4, 0 )
-visible = false
-light_color = Color( 0.964706, 0.960784, 0.862745, 1 )
-shadow_enabled = true
-
-[node name="Camera" type="Camera" parent="Blossom/WorldEnvironment"]
-transform = Transform( 1, 0, 0, 0, 0.955957, 0.293506, 0, -0.293506, 0.955957, -0.375911, 1.40957, 1.64954 )
 
 [node name="Tween" type="Tween" parent="."]
 

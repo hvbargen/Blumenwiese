@@ -235,9 +235,9 @@ func _on_DummyPlayer_long_pressed(global_id):
 
 func _on_DummyPlayer_clicked(global_id):
 	var nw_player = find_local_profile(global_id)
-	join_party(nw_player, true)
+	join_party(nw_player)
 
-func join_party(nw_player: NetworkPlayer, focus: bool = true):
+func join_party(nw_player: NetworkPlayer):
 	# if no controller is selected, player cannot join
 	if current_input_controller.device_name.empty():
 		var msg = "Please use the keyboard or a gamepad - using the mouse is not supported."
@@ -257,13 +257,13 @@ func join_party(nw_player: NetworkPlayer, focus: bool = true):
 	var peer_id = -1
 	if get_tree().network_peer is NetworkedMultiplayerPeer:
 		peer_id = get_tree().get_network_unique_id()
-	var result = Players.connect("player_added", self, "player_added", [focus], CONNECT_ONESHOT)
+	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
 	var ap = Players.add(nw_player, peer_id, controller)
 	if is_local(ap):
 		announce_local_players()
 	
-func player_added(ap: AdaptedPlayer, focus: bool = false):
+func player_added(ap: AdaptedPlayer):
 	var container = $VBoxContainer/ConnectedPlayers
 	var height := 200
 	var width := 150
@@ -276,8 +276,6 @@ func player_added(ap: AdaptedPlayer, focus: bool = false):
 	vpc.visible = true
 	vpc.set_focus_mode(Control.FOCUS_ALL)
 	container.add_child(vpc)
-	if focus:
-		vpc.grab_focus()
 	var vp := Viewport.new()
 	vp.size.x = width
 	vp.size.y = height

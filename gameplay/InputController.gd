@@ -14,6 +14,8 @@ const REMOTE = "[Remote]"
 
 const actions = [ "turn_left", "turn_right", "forward", "jump", "cancel" ]
 
+var ui_disabled_actions = {}
+
 func initialize_from_event(event: InputEvent) -> void:
 	if event is InputEventMouse:
 		push_error("Mouse control is not supported")
@@ -46,6 +48,34 @@ func disable():
 		if InputMap.has_action(action_name):
 			InputMap.erase_action(action_name)
 
+func enable_for_ui(on: bool = true):
+	if on:
+		for action in ui_disabled_actions.keys():
+			for event in ui_disabled_actions[action]:
+				InputMap.action_add_event(action, event)
+		ui_disabled_actions.clear()
+	else:
+		for action in InputMap.get_actions():
+			if not action.begins_with("ui_"):
+				break
+			for event in InputMap.get_action_list(action).duplicate():
+				# duplicate is necessary because modifying a Dictionary while
+				# iterating over it is not supported.
+				if ((event is InputEventKey and type == KEYBOARD)
+				or ((event is InputEventJoypadButton or event is InputEventJoypadMotion)
+					and type == GAMEPAD
+					and event.device == device)
+				):
+					if not ui_disabled_actions.has(action):
+						ui_disabled_actions[action] = [event]
+					else:
+						ui_disabled_actions[action].append(event)
+					InputMap.action_erase_event(action, event)
+					print("removed %s event %s" % [action, event.as_text()])
+				else:
+					print("kept %s event %s" % [action, event.as_text()])
+	#print("ui_down=", InputMap.get_action_list("ui_down"))
+	
 func set_enable(on: bool = true):
 	if (on):
 		assert(not in_game_uid.empty())

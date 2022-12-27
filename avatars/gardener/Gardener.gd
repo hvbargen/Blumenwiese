@@ -23,7 +23,7 @@ export var global_id: String
 signal out_of_bounds
 signal spawned_seed(who)
 
-signal ok_pressed
+signal jump_pressed
 signal cancel_pressed
 
 export var direction = - Vector3.FORWARD # TODO Why is minus necessary?
@@ -90,12 +90,14 @@ func get_input() -> InputState:
 		if Input.is_action_pressed("forward#%s" % in_game_uid):
 			state.forward = Input.get_action_strength("forward#%s" % in_game_uid)
 		if Input.is_action_pressed("turn_right#%s" % in_game_uid):
-			state.turn_right = Input.get_action_strength("turn_right#%s" % in_game_uid) - Input.get_action_strength("turn_left#%s" % in_game_uid)
+			state.turn_right += Input.get_action_strength("turn_right#%s" % in_game_uid)
+		if Input.is_action_pressed("turn_left#%s" % in_game_uid):
+			state.turn_right -= Input.get_action_strength("turn_left#%s" % in_game_uid)
 		if Input.is_action_pressed("jump#%s" % in_game_uid):
 			state.jump_pressed = true
 		if Input.is_action_just_pressed("jump#%s" % in_game_uid):
-			state.ok_just_pressed = true
-			emit_signal("ok_pressed")
+			state.jump_just_pressed = true
+			emit_signal("jump_pressed")
 		if Input.is_action_just_pressed("cancel#%s" % in_game_uid):
 			state.cancel_just_pressed = true
 			emit_signal("cancel_pressed")
@@ -154,15 +156,15 @@ func handle_input(delta: float, input_state: InputState):
 		if input_state.jump_pressed:
 			set_run_state(RunState.JUMPING)	
 			velocity.y = jump_accel * delta
+			emit_signal("jump")
 			emit_signal("spawned_seed", self)
 		else:
 			# Move the player
 			velocity.x = velocity2d.x
 			velocity.z = velocity2d.z
 
-	if not input_state.jump_pressed:
-		# Gravity
-		velocity.y -= gravity * delta
+	# Gravity
+	velocity.y -= gravity * delta
 	
 	velocity = move_and_slide(velocity, Vector3.UP)
 	
