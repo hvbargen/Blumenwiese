@@ -49,6 +49,7 @@ func disable():
 			InputMap.erase_action(action_name)
 
 func enable_for_ui(on: bool = true):
+	print("Controller ", device_name, " enable_for_ui", on)
 	if on:
 		for action in ui_disabled_actions.keys():
 			for event in ui_disabled_actions[action]:
@@ -57,7 +58,7 @@ func enable_for_ui(on: bool = true):
 	else:
 		for action in InputMap.get_actions():
 			if not action.begins_with("ui_"):
-				break
+				continue
 			for event in InputMap.get_action_list(action).duplicate():
 				# duplicate is necessary because modifying a Dictionary while
 				# iterating over it is not supported.
@@ -71,10 +72,7 @@ func enable_for_ui(on: bool = true):
 					else:
 						ui_disabled_actions[action].append(event)
 					InputMap.action_erase_event(action, event)
-					print("removed %s event %s" % [action, event.as_text()])
-				else:
-					print("kept %s event %s" % [action, event.as_text()])
-	#print("ui_down=", InputMap.get_action_list("ui_down"))
+					#print("removed %s event %s" % [action, event.as_text()])
 	
 func set_enable(on: bool = true):
 	if (on):

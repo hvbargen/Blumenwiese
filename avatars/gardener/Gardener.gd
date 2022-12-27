@@ -106,6 +106,10 @@ func get_input() -> InputState:
 	return state
 
 func handle_input(delta: float, input_state: InputState):
+
+	if not is_inside_tree():
+		return
+
 	var on_floor = is_on_floor()
 		
 	# Turn
