@@ -8,7 +8,6 @@ var global_id : String
 var __duration := 0.0
 var __signal_sent := false
 
-
 func _process(delta):
 	if is_pressed():
 		__duration += delta

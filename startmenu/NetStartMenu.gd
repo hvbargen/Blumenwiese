@@ -9,8 +9,6 @@ var logger: Logger
 var server_host := "192.168.178.56"
 var server_port : int = 9000
 
-var player_node_template: Control
-
 var local_profiles: Array # of NetworkPlayer
 
 var current_input_controller: InputController = InputController.new()
@@ -21,6 +19,9 @@ var players_not_ready: Array = [] # of global_id
 
 var podest_vpcs: Dictionary = {} # of global_id -> ViewPortContainer.name
 
+export onready var vpc_template = $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer as ViewportContainer
+export onready var player_node_template = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer as Button
+
 func _init():
 	._init()
 	logger = Logger.new("NetStartMenu")
@@ -30,8 +31,8 @@ func _init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	
-	player_node_template = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles/DummyPlayer
 	player_node_template.hide()
+	vpc_template.hide()
 	var mp = get_tree().multiplayer
 	$VBoxContainer/Network/TxtHost.text = server_host
 	$VBoxContainer/Network/TxtPort.text = server_port as String
@@ -52,7 +53,7 @@ func show_local_profiles():
 	var container = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
 	for child in container.get_children():
 		if child.name.begins_with("Icon"):
-			child.queue_free()
+			child.free()
 	for nw_player in local_profiles:
 		show_local_profile(nw_player)
 		
@@ -249,8 +250,6 @@ func join_party(nw_player: NetworkPlayer, focus: bool = true):
 			var msg = "The current controller %s#%s is already used by %s!" % [current_input_controller.device_name, current_input_controller.device + 1, ap.nickname]
 			$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = msg
 			return
-	var result = Players.connect("player_added", self, "player_added", [focus], CONNECT_ONESHOT)
-	print("Connect result: ", result)
 	var controller = InputController.new()
 	controller.type = current_input_controller.type
 	controller.device = current_input_controller.device
@@ -258,6 +257,8 @@ func join_party(nw_player: NetworkPlayer, focus: bool = true):
 	var peer_id = -1
 	if get_tree().network_peer is NetworkedMultiplayerPeer:
 		peer_id = get_tree().get_network_unique_id()
+	var result = Players.connect("player_added", self, "player_added", [focus], CONNECT_ONESHOT)
+	print("Connect result: ", result)
 	var ap = Players.add(nw_player, peer_id, controller)
 	if is_local(ap):
 		announce_local_players()
@@ -292,8 +293,7 @@ func player_added(ap: AdaptedPlayer, focus: bool = false):
 	gardener.global_id = ap.nw_player.global_id
 	gardener.can_run = false
 	vp.add_child(podest)
-	var vpc_template := $VBoxContainer/ConnectedPlayers/TemplateViewPortContainer
-	var cam_template := vpc_template.get_node("TemplateViewport/Camera")
+	var cam_template = vpc_template.get_node("Viewport/Camera")
 	var camera = Camera.new()
 	camera.transform = cam_template.transform
 	camera.name = "CamPodestScene#%d" % index
@@ -315,8 +315,9 @@ func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: Ri
 		print("Player is not yet ready: ", ap.nickname)
 	else:
 		print("Player is no longer ready: ", ap.nickname)
-	lbl_hint.text = "Press OK/Jump\nwhen ready"
-	gardener.connect("ok_pressed", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
+	lbl_hint.text = "Press Jump\nwhen ready"
+	ap.controller.enable_for_ui(false)
+	gardener.connect("jump_pressed", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
 	gardener.connect("cancel_pressed", self, "on_connected_player_cancel", [ap], CONNECT_ONESHOT)
 	anim.play("PressOkGlow")
 	players_not_ready.append(ap.nw_player.global_id)
@@ -324,6 +325,11 @@ func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: Ri
 
 func on_connected_player_cancel(ap: AdaptedPlayer):
 	print("Player cancelled: ", ap.nickname)
+	ap.controller.enable_for_ui(true)
+	var container = $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
+	for btn in container.get_children():
+		if btn.name.begins_with("Icon#") and btn.global_id == ap.nw_player.global_id:
+			btn.grab_focus()
 	leave_party(ap.nw_player)
 	
 func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
