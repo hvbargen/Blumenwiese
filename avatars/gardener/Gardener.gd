@@ -1,5 +1,7 @@
 extends KinematicBody
 
+class_name Gardener
+
 const cloth_material = preload("res://avatars/gardener/RobotCloth.tres")
 
 var controller: InputController
@@ -18,15 +20,15 @@ export var jump_accel = 300.0 # m/s
 export var shirt_color: Color = Color(0.8, 0.1, 0.1, 1.0) setget set_shirt_color
 export var shorts_color: Color = Color(1.0, 1.0, 1.0, 1.0) setget set_shorts_color
 export var nickname: String = "<nickname>" setget set_nickname
-export var global_id: String
+export var in_game_uid: String
 
 signal out_of_bounds
 signal spawned_seed(who)
 
-signal jump_pressed
+signal jump
 signal cancel_pressed
 
-export var direction = - Vector3.FORWARD # TODO Why is minus necessary?
+export var direction = Vector3.FORWARD
 export var velocity = Vector3.ZERO
 
 enum RunState { INIT, IDLE, JUMPING, RUNNING, SPRINTING, SLIDING }
@@ -55,7 +57,6 @@ func _ready():
 	set_shorts_color(shorts_color)
 	set_nickname(nickname)
 	anim = get_node("AnimationPlayer")
-	$Pivot/Spatial/ForwardIndicator.translation=direction + (Vector3.UP * 0.7)
 
 func _physics_process(delta):
 	var input_state = get_input()
@@ -86,7 +87,6 @@ func get_input() -> InputState:
 	state.jump_pressed = false
 	state.cancel_pressed = false	
 	if controller is InputController and controller.enabled:
-		var in_game_uid = controller.in_game_uid
 		if Input.is_action_pressed("forward#%s" % in_game_uid):
 			state.forward = Input.get_action_strength("forward#%s" % in_game_uid)
 		if Input.is_action_pressed("turn_right#%s" % in_game_uid):
@@ -96,8 +96,7 @@ func get_input() -> InputState:
 		if Input.is_action_pressed("jump#%s" % in_game_uid):
 			state.jump_pressed = true
 		if Input.is_action_just_pressed("jump#%s" % in_game_uid):
-			state.jump_just_pressed = true
-			emit_signal("jump_pressed")
+			state.ok_just_pressed = true
 		if Input.is_action_just_pressed("cancel#%s" % in_game_uid):
 			state.cancel_just_pressed = true
 			emit_signal("cancel_pressed")
@@ -160,7 +159,7 @@ func handle_input(delta: float, input_state: InputState):
 		if input_state.jump_pressed:
 			set_run_state(RunState.JUMPING)	
 			velocity.y = jump_accel * delta
-			emit_signal("jump")
+			emit_signal("jump", in_game_uid)
 			emit_signal("spawned_seed", self)
 		else:
 			# Move the player
@@ -188,3 +187,19 @@ func _on_AnimationPlayer_animation_finished(anim_name):
 func set_nickname(new_nickname):
 	nickname = new_nickname
 	$Pivot/Spatial/NameIndicator.text = nickname
+
+func setup_avatar(ap: AdaptedPlayer):
+	set_nickname(ap.nw_player.nickname)
+	set_shirt_color(ap.color)
+	set_shorts_color(ap.second_color)
+	controller = ap.controller
+	in_game_uid = controller.in_game_uid
+	if controller.type != InputController.REMOTE:
+		controller.enabled = true
+
+func setup_dummy(controller_type = InputController.KEYBOARD):
+	set_nickname("Dummy")
+	controller = InputController.new()
+	controller.initialize_dummy(controller_type)
+	controller.enabled = true
+	in_game_uid = controller.in_game_uid

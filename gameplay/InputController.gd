@@ -32,6 +32,12 @@ func initialize_from_event(event: InputEvent) -> void:
 	else:
 		push_error("Cannot use input event for controller initialization: %s" % event)
 
+func initialize_dummy(a_type = KEYBOARD) -> void:
+	type = a_type
+	device = 0
+	device_name = "Dummy-" + type
+	in_game_uid = "dummy" + type
+
 func set_in_game_uid(new_in_game_uid: String):
 	var was_enabled = enabled
 	if was_enabled:

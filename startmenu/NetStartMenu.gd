@@ -262,7 +262,8 @@ func join_party(nw_player: NetworkPlayer):
 	var ap = Players.add(nw_player, peer_id, controller)
 	if is_local(ap):
 		announce_local_players()
-	
+
+
 func player_added(ap: AdaptedPlayer):
 	var container = $VBoxContainer/ConnectedPlayers
 	var height := 200
@@ -285,10 +286,7 @@ func player_added(ap: AdaptedPlayer):
 	var podest = podest_scene.instance()
 	podest.name = "ScnPodestScene#%d" % index
 	var gardener = podest.get_node("Gardener")
-	gardener.nickname = ap.nw_player.nickname
-	gardener.shirt_color = ap.color
-	gardener.shorts_color = ap.second_color
-	gardener.global_id = ap.nw_player.global_id
+	gardener.setup_avatar(ap)
 	gardener.can_run = false
 	vp.add_child(podest)
 	var cam_template = vpc_template.get_node("Viewport/Camera")
@@ -298,9 +296,6 @@ func player_added(ap: AdaptedPlayer):
 	vp.add_child(camera)
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
-	gardener.controller = ap.controller
-	if gardener.controller.type != InputController.REMOTE:
-		gardener.controller.enabled = true
 	podest.get_node("LblController").text = "%s#%d" % [ap.controller.device_name, ap.controller.device + 1]
 	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
 	vpc.add_child(lbl_hint)

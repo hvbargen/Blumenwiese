@@ -2,25 +2,11 @@ extends Node
 
 
 onready var viewports = [ 
-	$VBoxContainer/ViewportContainer1/Viewport1,
-	$VBoxContainer/ViewportContainer2/Viewport2,
+	$VBoxContainer/ViewportContainer1/Viewport,
+	$VBoxContainer/ViewportContainer2/Viewport,
 ]
 
-onready var cameras = [
-	$VBoxContainer/ViewportContainer1/Viewport1/Camera1,
-	$VBoxContainer/ViewportContainer2/Viewport2/Camera2,
-]
-
-onready var avatars = [
-	$VBoxContainer/ViewportContainer1/Viewport1/Main/Gardener1,
-	$VBoxContainer/ViewportContainer1/Viewport1/Main/Gardener2,
-]
-
-onready var nicknames = [
-	"Player 1",
-	"Player 2",
-]
-
+onready var main = $VBoxContainer/ViewportContainer1/Viewport/Main
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -28,25 +14,22 @@ func _ready():
 	if GameSettings.num_viewports == 1:
 		$VBoxContainer/ViewportContainer2.queue_free()
 		$VBoxContainer/Spacer2.queue_free()
-		avatars[1].queue_free()
 		# TODO Adapt size of Viewport 1
 	else:
 		viewports[1].world = viewports[0].world
-		
-	if true:
-		for i in range(len(GameSettings.local_players)):
-			var ap: AdaptedPlayer = GameSettings.local_players[i]
-			var remote_transform := RemoteTransform.new()
-			remote_transform.remote_path = cameras[i].get_path()
-			avatars[i].get_node("3rdPerson").add_child(remote_transform)
-			avatars[i].nickname = ap.nickname
-			avatars[i].shirt_color = ap.color
-			avatars[i].shorts_color = ap.second_color
-		
-			avatars[i].controller = ap.controller
-			ap.controller.enabled = true
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+	# Setup the vieport cameras
+	for i in range(GameSettings.num_viewports):
+		var vp = viewports[i]
+		var target_cam = vp.get_node("Camera")
+		var k = 0
+		for p in main.get_children():
+			if p is Gardener:
+				if k == i:
+					var src_cam = p.get_node("3rdPerson/Camera")
+					var remote_transform = RemoteTransform.new()
+					remote_transform.remote_path = target_cam.get_path()
+					src_cam.add_child(remote_transform) 
+				k += 1
+	print("Splitscreen setup completed.")
 

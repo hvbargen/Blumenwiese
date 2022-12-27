@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=2]
+[gd_scene load_steps=33 format=2]
 
 [ext_resource path="res://avatars/gardener/Material.material" type="Material" id=1]
 [ext_resource path="res://avatars/gardener/Material_002.material" type="Material" id=2]
@@ -166,8 +166,6 @@ surfaces/0 = {
 "skeleton_aabb": [ AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( 0, 0, 0, -1, -1, -1 ), AABB( -0.34829, 0.992422, -0.32702, 0.702623, 0.452404, 0.57712 ), AABB( -0.397849, 0.992422, -0.32702, 0.80174, 0.757372, 0.690207 ), AABB( -0.397849, 1.03309, -0.32702, 0.80174, 0.716709, 0.690207 ), AABB( -0.397849, 1.03309, -0.293849, 0.80174, 0.639394, 0.657035 ), AABB( -0.351152, 0.992422, -0.240227, 0.708346, 0.618698, 0.603414 ), AABB( 0.13309, 0.812453, -0.0113001, 0.22701, 0.165405, 0.0588699 ), AABB( 0.208723, 0.812453, -0.0637306, 0.281182, 0.165405, 0.163482 ), AABB( 0.40291, 0.823867, -0.0535543, 0.211768, 0.134317, 0.143274 ), AABB( 0.537569, 0.765553, -0.110641, 0.300929, 0.257448, 0.257448 ), AABB( -0.354058, 0.812453, -0.0113001, 0.22701, 0.165405, 0.0588699 ), AABB( -0.483862, 0.812453, -0.0637306, 0.281182, 0.165405, 0.163482 ), AABB( -0.608636, 0.823867, -0.0535543, 0.211768, 0.134317, 0.143274 ), AABB( -0.832455, 0.765553, -0.110641, 0.300929, 0.257448, 0.257448 ), AABB( 0.0538416, 0.269388, -0.100344, 0.218959, 0.386501, 0.236853 ), AABB( 0.0439088, 0.111871, -0.100344, 0.236853, 0.359682, 0.236853 ), AABB( 0.0218635, 0.0114305, -0.155711, 0.288511, 0.179819, 0.444299 ), AABB( 0.0218635, 0.0114305, -0.155711, 0.288511, 0.155934, 0.444299 ), AABB( -0.266758, 0.269388, -0.100344, 0.218959, 0.386501, 0.236853 ), AABB( -0.274719, 0.111871, -0.100344, 0.236853, 0.359682, 0.236853 ), AABB( -0.304332, 0.0114305, -0.155711, 0.288511, 0.179819, 0.444299 ), AABB( -0.304332, 0.0114305, -0.155711, 0.288511, 0.155934, 0.444299 ) ],
 "vertex_count": 9396
 }
-
-[sub_resource type="SphereMesh" id=28]
 
 [sub_resource type="CapsuleShape" id=26]
 radius = 0.855937
@@ -4101,12 +4099,6 @@ skin = SubResource( 2 )
 mesh = SubResource( 5 )
 skin = SubResource( 2 )
 
-[node name="ForwardIndicator" type="CSGMesh" parent="Pivot/Spatial"]
-transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.7, 1 )
-visible = false
-lod_max_distance = 10.0
-mesh = SubResource( 28 )
-
 [node name="NameIndicator" type="Label3D" parent="Pivot/Spatial"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82668, 0 )
 cast_shadow = 0
@@ -4144,6 +4136,13 @@ anims/Sprint-loop = SubResource( 22 )
 anims/T-pose = SubResource( 23 )
 anims/WallJump = SubResource( 24 )
 anims/WallSlide = SubResource( 25 )
+
+[node name="3rdPerson" type="Spatial" parent="."]
+transform = Transform( -1, 0, -8.74228e-08, -3.11841e-08, 0.934217, 0.356705, 8.16718e-08, 0.356706, -0.934217, 0, 2.68398, -3.94876 )
+
+[node name="Camera" type="Camera" parent="3rdPerson"]
+transform = Transform( 1, -1.63447e-07, -2.04891e-07, 6.98492e-10, 1, -1.81608e-08, 0, 0, 1, 0, 0, 0 )
+current = true
 
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]
