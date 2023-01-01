@@ -12,6 +12,6 @@ func get_properties() -> Array:
 	return []
 
 func init_from_array(a: Array) -> void:
-	var props = get_properties()
+	var props := get_properties()
 	for i in range(len(props)):
 		set(props[i], a[i])

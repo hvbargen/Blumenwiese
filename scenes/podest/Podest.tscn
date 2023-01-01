@@ -70,3 +70,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.674763, 1.29373 )
 cast_shadow = 0
 billboard = 1
 text = "<Controller>"
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.40705, 2.46508 )
+current = true

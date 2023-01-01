@@ -7,43 +7,49 @@ var connected: Dictionary = {} # of global_id -> AdaptedPlayer
 
 var peers: Dictionary = {}  # of peer_id -> [global_id]
 
-var max_in_game_uid := 0
+var max_in_game_uid := 0 # The actual values start at 1
 
 var in_game_uids := {}
+
 
 # Find an unused in_game_uid and assign it to the global_id
 func _assign_in_game_uid(global_id: String) -> String:
 	if in_game_uids.has(global_id):
 		# Reuse it
 		return in_game_uids[global_id]
-	var uid = "%s" % max_in_game_uid
 	max_in_game_uid += 1
+	var uid := "%s" % max_in_game_uid
 	while in_game_uids.has(uid):
-		uid = "%s" % max_in_game_uid
 		max_in_game_uid += 1
+		uid = "%s" % max_in_game_uid
 	return uid
 
-remote func assign_in_game_uid(global_id: String):
+
+remote func assign_in_game_uid(global_id: String) -> void:
 	var uid = _assign_in_game_uid(global_id)
 	rpc_id(get_tree().get_rpc_sender_id(), "on_server_assigned_in_game_uid", global_id, uid)
 
-remote func on_server_assigned_in_game_uid(global_id: String, uid: String):
+
+remote func on_server_assigned_in_game_uid(global_id: String, uid: String) -> void:
 	in_game_uids[global_id] = uid
 	connected[global_id].in_game_uid = uid
-	
-func dump():
+
+
+func dump() -> void:
 	print("Dump of players connected:")
 	for p in connected.values():
 		p.dump()
 
+
 func find(global_id: String) -> AdaptedPlayer:
 	return connected[global_id]
 
-func add(nw_player, peer_id: int, controller: InputController):
+
+func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController) -> AdaptedPlayer:
 	print("Before add %s:" % nw_player)
 	dump()
-	var global_id = nw_player.global_id
-	var ap = AdaptedPlayer.new(nw_player, peer_id, controller)
+	var global_id := nw_player.global_id
+	var ap := AdaptedPlayer.new(nw_player, peer_id, controller)
 	ap.nw_player = nw_player
 	ap.peer_id = peer_id
 	ap.nickname = nw_player.nickname
@@ -54,10 +60,10 @@ func add(nw_player, peer_id: int, controller: InputController):
 
 	# Assign a unique id
 	if get_tree().has_network_peer():
-		if get_tree().get_network_unique_id() == 1:
+		if get_tree().is_network_server():
 			# We are the server
 			ap.in_game_uid = _assign_in_game_uid(global_id)
-			# TODO: Notify the other peers
+			print("TODO: Notify the other peers about assigned in_game_uid")
 		else:
 			# We are a client
 			# Ask the server to assign an id
@@ -85,22 +91,24 @@ func add(nw_player, peer_id: int, controller: InputController):
 	emit_signal("player_added", ap)
 	return ap
 
+
 # Remove a player.
-func remove(global_id: String):
+func remove(global_id: String) -> void:
 	print("Before remove %s:" % global_id)
 	dump()
-	var ap = find(global_id)
+	var ap := find(global_id)
 	if not (connected.erase(global_id)):
 		printerr("Trying to remove player who is not connected: ", global_id)
 		return
-	var peer_id = ap.peer_id
+	var peer_id := ap.peer_id
 	# Remove from peers
 	peers[peer_id].erase(global_id)
 	print("After remove:")
 	dump()
 	emit_signal("player_removed", ap)
-	
-func remove_peer(peer_id):
+
+
+func remove_peer(peer_id) -> void:
 	print("Removing peer %s" % peer_id)
 	if peers.has(peer_id):
 		for ap in peers[peer_id]:

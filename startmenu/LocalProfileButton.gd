@@ -8,7 +8,7 @@ var global_id : String
 var __duration := 0.0
 var __signal_sent := false
 
-func _process(delta):
+func _process(delta: float):
 	if is_pressed():
 		__duration += delta
 		if __duration > 1.0 and not __signal_sent:

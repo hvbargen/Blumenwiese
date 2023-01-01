@@ -8,11 +8,11 @@ export var device_name: String = ""
 export var in_game_uid: String = ""
 export var enabled: bool = false setget set_enable
 
-const GAMEPAD = "Gamepad"
-const KEYBOARD = "Keyboard"
-const REMOTE = "[Remote]"
+const GAMEPAD := "Gamepad"
+const KEYBOARD := "Keyboard"
+const REMOTE := "[Remote]"
 
-const actions = [ "turn_left", "turn_right", "forward", "jump", "cancel" ]
+const actions := [ "turn_left", "turn_right", "forward", "jump", "cancel" ]
 
 var ui_disabled_actions = {}
 
@@ -39,18 +39,16 @@ func initialize_dummy(a_type = KEYBOARD) -> void:
 	in_game_uid = "dummy" + type
 
 func set_in_game_uid(new_in_game_uid: String):
-	var was_enabled = enabled
-	if was_enabled:
+	if enabled:
 		disable()
 	in_game_uid = new_in_game_uid
-	if was_enabled:
-		set_enable(true)
+	set_enable(true)
 		
 func disable():
 	if in_game_uid.empty():
 		return
 	for action in actions:
-		var action_name = "%s#%s" % [action, in_game_uid]
+		var action_name := "%s#%s" % [action, in_game_uid]
 		if InputMap.has_action(action_name):
 			InputMap.erase_action(action_name)
 
@@ -81,9 +79,11 @@ func enable_for_ui(on: bool = true):
 					#print("removed %s event %s" % [action, event.as_text()])
 	
 func set_enable(on: bool = true):
-	if (on):
-		assert(not in_game_uid.empty())
-	disable()
+	if enabled:
+		disable()
+	if on and in_game_uid.empty():
+		printerr("Cannot enable controller, because in_game_uid is not yet set.")
+		return
 	enabled = on
 	if not on:
 		return
@@ -91,14 +91,14 @@ func set_enable(on: bool = true):
 	if type == GAMEPAD:
 
 		# turn_left
-		var action_name = "%s#%s" % ["turn_left", in_game_uid]
+		var action_name := "%s#%s" % ["turn_left", in_game_uid]
 		InputMap.add_action(action_name)
-		var dpad_event = InputEventJoypadButton.new()
+		var dpad_event := InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_LEFT
 		dpad_event.device = device
 		dpad_event.pressed = true
 		InputMap.action_add_event(action_name, dpad_event)
-		var stick_event = InputEventJoypadMotion.new()
+		var stick_event := InputEventJoypadMotion.new()
 		stick_event.axis = JOY_ANALOG_LX
 		stick_event.axis_value = -1.0
 		stick_event.device = device
@@ -153,9 +153,9 @@ func set_enable(on: bool = true):
 	if type == KEYBOARD:
 
 		# turn_left
-		var action_name = "%s#%s" % ["turn_left", in_game_uid]
+		var action_name := "%s#%s" % ["turn_left", in_game_uid]
 		InputMap.add_action(action_name)
-		var key_event = InputEventKey.new()
+		var key_event := InputEventKey.new()
 		key_event.scancode = KEY_LEFT
 		key_event.device = device
 		InputMap.action_add_event(action_name, key_event)

@@ -321,9 +321,6 @@ own_world = true
 handle_input_locally = false
 render_target_update_mode = 3
 
-[node name="Camera" type="Camera" parent="VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/Viewport"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.40705, 2.46508 )
-
 [node name="Podest" parent="VBoxContainer/ConnectedPlayers/TemplateViewPortContainer/Viewport" instance=ExtResource( 4 )]
 
 [node name="LblHint" type="RichTextLabel" parent="VBoxContainer/ConnectedPlayers/TemplateViewPortContainer"]
@@ -395,18 +392,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 354.0
-margin_top = 168.0
-margin_right = 662.0
-margin_bottom = 580.0
+margin_left = 390.0
+margin_top = 204.0
+margin_right = 698.0
+margin_bottom = 616.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 672.0
-margin_top = 168.0
-margin_right = 980.0
-margin_bottom = 580.0
+margin_left = 708.0
+margin_top = 204.0
+margin_right = 1016.0
+margin_bottom = 616.0
 edit_alpha = false
 presets_visible = false
 

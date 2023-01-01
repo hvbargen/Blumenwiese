@@ -11,6 +11,8 @@ var cancel_pressed: bool
 var ok_just_pressed: bool
 var cancel_just_pressed: bool
 
+var consumed: bool = false
+
 func _init (a: Array = []):
 	if not a.empty():
 		init_from_array(a)

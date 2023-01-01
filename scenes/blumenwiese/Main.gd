@@ -9,19 +9,19 @@ export (PackedScene) var seed_scene
 export (PackedScene) var flower_scene
 
 const Logger = preload("res://util/Logger.gd")
-var logger:= Logger.new("Main", Logger.Level.DEBUG)
+var logger := Logger.new("Main", Logger.Level.DEBUG)
 
-onready var spawn_positions = $SpawnPositions as Spatial
+onready var spawn_positions := $SpawnPositions as Spatial
 
-onready var gardener_template = $GardenerTemplate as Gardener
+onready var gardener_template := $GardenerTemplate as Gardener
 
 export var gardener_scene = preload("res://avatars/gardener/Gardener.tscn") 
 
-var free_spawn_positions = []
+var free_spawn_positions := []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var f = $Testflower/Flower
+	var f := $Testflower/Flower
 	f.spawn_leafs(0.5)
 	f.spawn_blossom(1)
 	$"Testpflanze/Blüte".grow(2)
@@ -32,7 +32,7 @@ func _ready():
 		remove_child(gardener_template)
 		for i in range(len(GameSettings.local_players)):
 			var ap: AdaptedPlayer = GameSettings.local_players[i]
-			var avatar = spawn_player(ap)
+			var _avatar = spawn_player(ap)
 	else:
 		init_dummy(2)
 
@@ -47,7 +47,7 @@ func _on_Gardener_spawned_seed(who: Node):
 	new_seed.connect("seed_sunken", self, "_on_Seed_seed_sunken")
 
 
-func _on_Seed_seed_sunken(where, color):
+func _on_Seed_seed_sunken(where, color: Color):
 	logger.debug("Seed sunken at %s, color is %s", where, color)
 	var new_flower = flower_scene.instance()
 	new_flower.initialize(where, color)
@@ -56,12 +56,15 @@ func _on_Seed_seed_sunken(where, color):
 
 
 func spawn_player(ap: AdaptedPlayer) -> Gardener:
-	var spawn_position = free_spawn_positions.pop_front()
-	var avatar = gardener_scene.instance() as Gardener
+	var spawn_position: Spatial = free_spawn_positions.pop_front()
+	var avatar := gardener_scene.instance() as Gardener
 	avatar.name = "Player#%s" % ap.in_game_uid
 	avatar.setup_avatar(ap)
 	add_child(avatar)
 	avatar.transform = spawn_position.transform
+	avatar.direction_global = avatar.transform.basis.z
+	avatar.set_network_master(1)
+	
 	return avatar
 
 func init_dummy(one_or_two: int):
@@ -87,7 +90,15 @@ func init_dummy(one_or_two: int):
 		controller = InputController.new()
 		controller.initialize_dummy(InputController.GAMEPAD)
 		var ap2 = AdaptedPlayer.new(nw, 0, controller)
-		var player2 = spawn_player(ap2)
+		var _player2 = spawn_player(ap2)
+
+	nw.global_id = "id3"
+	nw.nickname = "Remoty Dummy"
+	nw.fav_color1 = Color.green
+	nw.fav_color2 = Color.red
+	controller = InputController.new()
+	controller.initialize_dummy(InputController.REMOTE)
+	var _remote_ap = spawn_player(AdaptedPlayer.new(nw, 0, controller))
 	
 	player1.get_node("3rdPerson/Camera").current = true
 	print("Using dummy with %s players." % one_or_two)
