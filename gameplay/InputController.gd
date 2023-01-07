@@ -57,6 +57,7 @@ func disable():
 			if InputMap.has_action(action_name):
 				InputMap.erase_action(action_name)
 
+
 func enable_for_ui(on: bool = true):
 	print("Controller ", device_name, " enable_for_ui", on)
 	if on:

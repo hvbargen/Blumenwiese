@@ -261,7 +261,8 @@ func join_party(nw_player: NetworkPlayer):
 		peer_id = get_tree().get_network_unique_id()
 	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
-	var ap := Players.add(nw_player, peer_id, controller)
+	var ap := AdaptedPlayer.new(nw_player, peer_id, controller)
+	Players.add(ap)
 
 
 func player_added(ap: AdaptedPlayer):
@@ -281,7 +282,7 @@ func player_added(ap: AdaptedPlayer):
 	vpc.rect_min_size.x = width
 	vpc.rect_min_size.y = height
 	vpc.name = "PodestScene#%d" % index
-	podest_vpcs[ap.nw_player.global_id] = vpc.name
+	podest_vpcs[ap.global_id] = vpc.name
 	vpc.visible = true
 	vpc.set_focus_mode(Control.FOCUS_ALL)
 	container.add_child(vpc)
@@ -324,7 +325,7 @@ func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: Ri
 	gardener.connect("jump", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
 	gardener.connect("cancel_pressed", self, "on_connected_player_cancel", [ap], CONNECT_ONESHOT)
 	anim.play("PressOkGlow")
-	players_not_ready.append(ap.nw_player.global_id)
+	players_not_ready.append(ap.global_id)
 	print("Players not ready: ", players_not_ready)
 
 
@@ -333,9 +334,9 @@ func on_connected_player_cancel(ap: AdaptedPlayer):
 	ap.controller.enable_for_ui(true)
 	var container := $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
 	for btn in container.get_children():
-		if btn.name.begins_with("Icon#") and btn.global_id == ap.nw_player.global_id:
+		if btn.name.begins_with("Icon#") and btn.global_id == ap.global_id:
 			btn.grab_focus()
-	leave_party(ap.nw_player)
+	leave_party(ap)
 
 	
 func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
@@ -344,7 +345,7 @@ func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTe
 	gardener.connect("cancel_pressed", self, "on_connected_player_not_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
 	anim.play("ReadyGlow")
 	print("Players not ready: ", players_not_ready)
-	var i := players_not_ready.find(ap.nw_player.global_id)
+	var i := players_not_ready.find(ap.global_id)
 	if i >= 0:
 		players_not_ready.remove(i)
 		if players_not_ready.empty():
@@ -354,13 +355,13 @@ func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTe
 			for p in players_not_ready:
 				print("  %s" % p)
 	else:
-		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nw_player.nickname, ap.nw_player.global_id])
+		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nickname, ap.global_id])
 
 
-func leave_party(nw_player: NetworkPlayer) -> void:
-	var result = Players.connect("player_removed", self, "player_removed", [], CONNECT_ONESHOT)
-	print("Connect result: ", result)
-	Players.remove(nw_player.global_id)
+func leave_party(ap: AdaptedPlayer) -> void:
+	var _result = Players.connect("player_removed", self, "player_removed", [], CONNECT_ONESHOT)
+	Players.remove(ap.global_id)
+	
 	
 
 func find_podest_vpc(global_id: String) -> ViewportContainer:
@@ -368,9 +369,10 @@ func find_podest_vpc(global_id: String) -> ViewportContainer:
 
 
 func player_removed(ap: AdaptedPlayer) -> void:
-	players_not_ready.erase(ap.nw_player.global_id)
-	var vpc = find_podest_vpc(ap.nw_player.global_id)
-	$VBoxContainer/ConnectedPlayers.remove_child(vpc)
+	ap.controller.disable()
+	ap.controller = null
+	players_not_ready.erase(ap.global_id)
+	var vpc = find_podest_vpc(ap.global_id)
 	vpc.queue_free()
 	if is_local(ap):
 		announce_local_players()
@@ -436,7 +438,7 @@ func announce_players(players: Array, peer_id = null) -> void:
 	for ap in players:
 		var msg := EnterLobby.new()
 		msg.nickname = ap.nickname
-		msg.global_id = ap.nw_player.global_id
+		msg.global_id = ap.global_id
 		msg.in_game_uid = ap.in_game_uid
 		msg.peer_id = ap.peer_id
 		msg.color = ap.color
@@ -486,15 +488,15 @@ remote func recv_announced_players(announced_players: Array):
 	for p in announced_players:
 		var ap := parse_announced_player(EnterLobby.new(p), peer_id)
 		ap_array.append(ap)
-		remote_global_ids.append(ap.nw_player.global_id)
+		remote_global_ids.append(ap.global_id)
 	for global_id in previous_global_ids:
 		if not (global_id in remote_global_ids):
 			Players.remove(global_id)
 	# Add players that are on the peer's list, but not on our list
 	for remote_ap in ap_array:
-		if not (remote_ap.nw_player.global_id in previous_global_ids):
-			var ap := Players.add(remote_ap.nw_player, peer_id, remote_ap.controller)
-			player_added(ap)
+		if not (remote_ap.global_id in previous_global_ids):
+			Players.add(remote_ap)
+			player_added(remote_ap)
 		else:
 			print("TODO: Handle editing of remote players, eg by version numbering?")
 

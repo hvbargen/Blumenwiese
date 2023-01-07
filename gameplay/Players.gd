@@ -48,51 +48,44 @@ func find(global_id: String) -> AdaptedPlayer:
 	return connected[global_id]
 
 
-func add(nw_player: NetworkPlayer, peer_id: int, controller: InputController) -> AdaptedPlayer:
-	print("Before add %s:" % nw_player)
+func add(ap: AdaptedPlayer) -> void:
 	dump()
-	var global_id := nw_player.global_id
-	var ap := AdaptedPlayer.new(nw_player, peer_id, controller)
-	ap.nw_player = nw_player
-	ap.peer_id = peer_id
-	ap.nickname = nw_player.nickname
-	if not (peer_id in peers):
-		peers[peer_id] = [global_id]
+	if not (ap.peer_id in peers):
+		peers[ap.peer_id] = [ap.global_id]
 	else:
-		peers[peer_id].append(global_id)
+		peers[ap.peer_id].append(ap.global_id)
 
 	# Assign a unique id
 	if get_tree().has_network_peer():
 		if get_tree().is_network_server():
 			# We are the server
-			ap.in_game_uid = _assign_in_game_uid(global_id)
+			ap.in_game_uid = _assign_in_game_uid(ap.global_id)
 			print("TODO: Notify the other peers about assigned in_game_uid")
 		else:
 			# We are a client
 			# Ask the server to assign an id
-			rpc_id(1, "assign_in_game_uid", global_id)
+			rpc_id(1, "assign_in_game_uid", ap.global_id)
 	else:
 		# local game
-		ap.in_game_uid = _assign_in_game_uid(global_id)
+		ap.in_game_uid = _assign_in_game_uid(ap.global_id)
 	
 	# TODO Try to choose a unique color
 	var existing_colors: Array = []
 	for apc in connected.values():
 		existing_colors.append(apc.color)
-	if not (ap.nw_player.fav_color1 in existing_colors):
-		ap.color = ap.nw_player.fav_color1
-		ap.second_color = ap.nw_player.fav_color2
-	elif not (ap.nw_player.fav_color2 in existing_colors):
-		ap.color = ap.nw_player.fav_color2
-		ap.second_color = ap.nw_player.fav_color1
+	if not (ap.color in existing_colors):
+		pass
+	elif not (ap.second_color in existing_colors):
+		ap.change_colors(ap.second_color, ap.color)
 	else:
-		ap.color = Color.from_hsv(randf(), rand_range(0.8, 1), rand_range(0.8, 1), 1)
-		print("Must choose a random color for %s" % ap.nickname)
-	connected[global_id] = ap
+		var color1 = Color.from_hsv(randf(), rand_range(0.8, 1), rand_range(0.8, 1), 1)
+		var color2 = ap.color 
+		ap.change_colors(color1, color2)
+		print("Had to choose a random color for %s" % ap.nickname)
+	connected[ap.global_id] = ap
 	print("After add:")
 	dump()
 	emit_signal("player_added", ap)
-	return ap
 
 
 # Remove a player.

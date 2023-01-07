@@ -64,6 +64,7 @@ config/icon="res://icon.png"
 
 Players="*res://gameplay/Players.gd"
 GameSettings="*res://gameplay/GameSettings.gd"
+GameEvents="*res://gameplay/GameEvents.gd"
 
 [display]
 

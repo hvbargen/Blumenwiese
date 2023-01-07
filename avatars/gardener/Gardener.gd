@@ -116,13 +116,15 @@ func get_local_input() -> InputState:
 			state.ok_just_pressed = true
 		if Input.is_action_just_pressed("cancel#%s" % in_game_uid):
 			state.cancel_just_pressed = true
-			emit_signal("cancel_pressed")
 		elif controller.type == InputController.REMOTE:
 			print("TODO apply input from remote controllers?")
 
 		if controller.in_game_uid != "":
 			publish_input(state)
 
+		if state.cancel_just_pressed:
+			emit_signal("cancel_pressed")
+		
 	return state
 
 
@@ -231,7 +233,7 @@ func set_nickname(new_nickname: String) -> void:
 
 
 func setup_avatar(ap: AdaptedPlayer) -> void:
-	set_nickname(ap.nw_player.nickname)
+	set_nickname(ap.nickname)
 	set_shirt_color(ap.color)
 	set_shorts_color(ap.second_color)
 	controller = ap.controller
@@ -247,11 +249,14 @@ func setup_dummy(controller_type = InputController.KEYBOARD) -> void:
 
 # Send info about the input to the server
 func publish_input(state: InputState) -> void:
-	if not get_tree().has_network_peer():
+	if controller == null:
+		print("No controller, so no input")
 		return
 	var in_game_uid := controller.in_game_uid
 	if not in_game_uid:
 		print("Cannot publish input for %s, because in_game_uid is not yet set." % [nickname])
+		return
+	if not get_tree().has_network_peer():
 		return
 	_packet_counter += 1
 	if (_packet_counter > 9999):
