@@ -40,9 +40,9 @@ _global_script_classes=[ {
 "path": "res://network/messages/message.gd"
 }, {
 "base": "Resource",
-"class": "NetworkPlayer",
+"class": "PlayerProfile",
 "language": "GDScript",
-"path": "res://network/Player.gd"
+"path": "res://network/PlayerProfile.gd"
 } ]
 _global_script_class_icons={
 "AdaptedPlayer": "",
@@ -51,13 +51,13 @@ _global_script_class_icons={
 "InputController": "",
 "InputState": "",
 "Message": "",
-"NetworkPlayer": ""
+"PlayerProfile": ""
 }
 
 [application]
 
 config/name="Blumenwiese"
-run/main_scene="res://startmenu/NetStartMenu.tscn"
+run/main_scene="res://startmenu/LobbyUI.tscn"
 config/icon="res://icon.png"
 
 [autoload]

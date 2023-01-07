@@ -11,14 +11,14 @@ var global_id: String
 var controller: InputController
 
 
-func _init(a_nw_player: NetworkPlayer, a_peer_id: int, a_controller: InputController) -> void:
+func _init(a_player_profile: PlayerProfile, a_peer_id: int, a_controller: InputController) -> void:
 	._init()
 	self.peer_id = a_peer_id
-	self.nickname = a_nw_player.nickname
+	self.nickname = a_player_profile.nickname
 	self.controller = a_controller
-	self.color = a_nw_player.fav_color1
-	self.second_color = a_nw_player.fav_color2
-	self.global_id = a_nw_player.global_id
+	self.color = a_player_profile.fav_color1
+	self.second_color = a_player_profile.fav_color2
+	self.global_id = a_player_profile.global_id
 	in_game_uid = controller.in_game_uid
 
 

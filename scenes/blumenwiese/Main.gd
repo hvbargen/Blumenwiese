@@ -71,7 +71,7 @@ func init_dummy(one_or_two: int):
 	# Dummy scene with two players,
 	remove_child(gardener_template)
 
-	var nw = NetworkPlayer.new()
+	var nw = PlayerProfile.new()
 
 	nw.global_id = "id1"
 	nw.nickname = "Dummy 1"
