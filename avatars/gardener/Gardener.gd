@@ -16,7 +16,6 @@ export var jump_accel := 300.0 # m/s
 export var shirt_color := Color(0.8, 0.1, 0.1, 1.0) setget set_shirt_color
 export var shorts_color := Color(1.0, 1.0, 1.0, 1.0) setget set_shorts_color
 export var nickname := "<nickname>" setget set_nickname
-export var in_game_uid: String
 
 signal out_of_bounds
 signal spawned_seed(who)
@@ -102,8 +101,9 @@ func get_local_input() -> InputState:
 	state.forward = 0
 	state.turn_right = 0
 	state.jump_pressed = false
-	state.cancel_pressed = false	
+	state.cancel_pressed = false
 	if controller is InputController and controller.enabled:
+		var in_game_uid := controller.in_game_uid
 		if Input.is_action_pressed("forward#%s" % in_game_uid):
 			state.forward = Input.get_action_strength("forward#%s" % in_game_uid)
 		if Input.is_action_pressed("turn_right#%s" % in_game_uid):
@@ -198,7 +198,7 @@ func handle_input(delta: float, input_state: InputState) -> void:
 		if input_state.jump_pressed:
 			set_run_state(RunState.JUMPING)	
 			velocity_global.y = jump_accel * delta
-			emit_signal("jump", in_game_uid)
+			emit_signal("jump", controller.in_game_uid)
 			emit_signal("spawned_seed", self)
 		else:
 			# Move the player
@@ -235,7 +235,6 @@ func setup_avatar(ap: AdaptedPlayer) -> void:
 	set_shirt_color(ap.color)
 	set_shorts_color(ap.second_color)
 	controller = ap.controller
-	in_game_uid = controller.in_game_uid
 	if controller.type != InputController.REMOTE and controller.in_game_uid:
 		controller.enabled = true
 
@@ -244,15 +243,15 @@ func setup_dummy(controller_type = InputController.KEYBOARD) -> void:
 	set_nickname("Dummy")
 	controller = InputController.new()
 	controller.initialize_dummy(controller_type)
-	in_game_uid = controller.in_game_uid
 
 
 # Send info about the input to the server
 func publish_input(state: InputState) -> void:
 	if not get_tree().has_network_peer():
 		return
-	if in_game_uid == "":
-		print("Cannot publish input, because in_game_uid is not yet set.")
+	var in_game_uid := controller.in_game_uid
+	if not in_game_uid:
+		print("Cannot publish input for %s, because in_game_uid is not yet set." % [nickname])
 		return
 	_packet_counter += 1
 	if (_packet_counter > 9999):
@@ -266,7 +265,7 @@ func publish_input(state: InputState) -> void:
 mastersync func upload_input_from_client(packet_no: int, peer_in_game_uid: String, state: Array) -> void:
 	var sender_id = get_tree().get_rpc_sender_id()
 
-	assert(in_game_uid == peer_in_game_uid)
+	assert(controller.in_game_uid == peer_in_game_uid)
 	# Sonst habe ich ein Verständnisproblem...
 
 	assert(peer_in_game_uid != "")
@@ -307,35 +306,35 @@ puppet func download_input_from_server(packet_no: int, peer_in_game_uid: String,
 	var sender_id = get_tree().get_rpc_sender_id()
 	assert(sender_id == 1)
 	
-	if in_game_uid == "":
+	if not controller.in_game_uid:
 		print("%s cannot download input from server, because in_game_uid is not yet set." % [name])
 		return
 	
-	if packet_no % 20 == 0:
+	if packet_no % 60 == 0:
 		print("Client received input for player %s from server" % [peer_in_game_uid])
 
-	if in_game_uid != peer_in_game_uid:
-		print("Own in_game_uid=%s, peer_in_game_uid received=%s" % [in_game_uid, peer_in_game_uid])
-	assert(in_game_uid == peer_in_game_uid)
+	if controller.in_game_uid != peer_in_game_uid:
+		print("Own in_game_uid=%s, peer_in_game_uid received=%s" % [controller.in_game_uid, peer_in_game_uid])
+	assert(controller.in_game_uid == peer_in_game_uid)
 	# Sonst habe ich ein Verständnisproblem...
 	
-	assert(in_game_uid != "")
+	assert(controller.in_game_uid)
 
 	if _packet_counter >= 0:
 		# Check for out-dated packets
 		if packet_no > _packet_counter and packet_no < _packet_counter + 200:
 			if packet_no > _packet_counter + 1:
-				print("Received packet %d for player %s, %d packets got lost and will be ignored if arriving later." % [packet_no, in_game_uid, packet_no - _packet_counter - 1])
+				print("Received packet %d for player %s, %d packets got lost and will be ignored if arriving later." % [packet_no, controller.in_game_uid, packet_no - _packet_counter - 1])
 			else:
 				pass # The perfect case
 		elif packet_no < 100 and _packet_counter > 9900:
 			# Wrap around
-			print("Received packet %d for player %s, old counter was %d, assuming that packets got lost and will be ignored if arriving later." % [packet_no, in_game_uid, _packet_counter])
+			print("Received packet %d for player %s, old counter was %d, assuming that packets got lost and will be ignored if arriving later." % [packet_no, controller.in_game_uid, _packet_counter])
 		elif packet_no < _packet_counter + 200:
-			print("Ignoring out-dated packet %d for player %s" % [packet_no, in_game_uid])
+			print("Ignoring out-dated packet %d for player %s" % [packet_no, controller.in_game_uid])
 			return
 		else:
-			push_error("Lost sync: Received packet %d for player %s current _packet_counter is %d" % [packet_no, in_game_uid, _packet_counter])
+			push_error("Lost sync: Received packet %d for player %s current _packet_counter is %d" % [packet_no, controller.in_game_uid, _packet_counter])
 			printerr("@TODO What to do now?")
 			return
 

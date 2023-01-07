@@ -148,7 +148,7 @@ func _on_BtnLocal_pressed():
 func _on_BtnServer_pressed():
 	server_host = $VBoxContainer/Network/TxtHost.text
 	server_port = $VBoxContainer/Network/TxtPort.text as int
-	printerr("TODO: Automatic saving of server host and port!")
+	print("TODO: Automatic saving of server host and port!")
 	print("Starting Server ", server_host, ":", server_port, " -- Note that the host is actually ignored!")
 	var peer = NetworkedMultiplayerENet.new()
 	# Check that server_host is valid
@@ -176,7 +176,7 @@ func _on_BtnServer_pressed():
 func _on_BtnClient_pressed():
 	server_host = $VBoxContainer/Network/TxtHost.text
 	server_port = $VBoxContainer/Network/TxtPort.text as int
-	printerr("TODO: Automatic saving of server host and port!")
+	print("TODO: Automatic saving of server host and port!")
 	print("Starting Client, connecting to ", server_host, ":", server_port)
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_client(server_host, server_port)
@@ -262,14 +262,17 @@ func join_party(nw_player: NetworkPlayer):
 	var result = Players.connect("player_added", self, "player_added", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
 	var ap := Players.add(nw_player, peer_id, controller)
-	if is_local(ap):
-		announce_local_players()
-	elif get_tree().is_network_server():
-		# Announce the new player to all other peers
-		announce_players([ap])
 
 
 func player_added(ap: AdaptedPlayer):
+	
+	if get_tree().is_network_server():
+		if is_local(ap):
+			announce_local_players()
+		elif get_tree().is_network_server():
+			# Announce the new player to all other peers
+			announce_players([ap])	
+	
 	var container := $VBoxContainer/ConnectedPlayers
 	var height := 200
 	var width := 150
@@ -303,12 +306,13 @@ func player_added(ap: AdaptedPlayer):
 	#vp.add_child(camera)
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
-	podest.get_node("LblController").text = "%s#%d" % [ap.controller.device_name, ap.controller.device + 1]
+	podest.get_node("LblController").text = "%s %s#%d" % [ap.in_game_uid, ap.controller.device_name, ap.controller.device + 1]
 	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
 	vpc.add_child(lbl_hint)
 	var anim = vpc_template.get_node("AnimationPlayer").duplicate()
 	vpc.add_child(anim)
 	on_connected_player_not_ready(gardener, anim, lbl_hint, ap, true)
+
 
 func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer, first_time: bool = false):
 	if first_time:
@@ -323,6 +327,7 @@ func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: Ri
 	players_not_ready.append(ap.nw_player.global_id)
 	print("Players not ready: ", players_not_ready)
 
+
 func on_connected_player_cancel(ap: AdaptedPlayer):
 	print("Player cancelled: ", ap.nickname)
 	ap.controller.enable_for_ui(true)
@@ -331,6 +336,7 @@ func on_connected_player_cancel(ap: AdaptedPlayer):
 		if btn.name.begins_with("Icon#") and btn.global_id == ap.nw_player.global_id:
 			btn.grab_focus()
 	leave_party(ap.nw_player)
+
 	
 func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
 	print("Player is ready: ", ap.nickname)
@@ -350,13 +356,16 @@ func on_connected_player_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTe
 	else:
 		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nw_player.nickname, ap.nw_player.global_id])
 
+
 func leave_party(nw_player: NetworkPlayer) -> void:
 	var result = Players.connect("player_removed", self, "player_removed", [], CONNECT_ONESHOT)
 	print("Connect result: ", result)
 	Players.remove(nw_player.global_id)
 	
+
 func find_podest_vpc(global_id: String) -> ViewportContainer:
 	return $VBoxContainer/ConnectedPlayers.get_node(podest_vpcs[global_id])	as ViewportContainer
+
 
 func player_removed(ap: AdaptedPlayer) -> void:
 	players_not_ready.erase(ap.nw_player.global_id)
@@ -365,6 +374,7 @@ func player_removed(ap: AdaptedPlayer) -> void:
 	vpc.queue_free()
 	if is_local(ap):
 		announce_local_players()
+
 
 func start_game() -> void:
 	var button_group: ButtonGroup = $VBoxContainer/Network/BtnLocal.group
@@ -396,12 +406,14 @@ func start_game() -> void:
 	if get_tree().change_scene_to(screen) != OK:
 		push_error("Unable to start scene")
 
+
 func is_local(ap: AdaptedPlayer) -> bool:
 	var local_peer_id = -1
 	if get_tree().has_network_peer():
 		local_peer_id = get_tree().get_network_unique_id()
 	return ap.peer_id == local_peer_id
-			
+
+
 func get_local_players() -> Array:
 	# How many players are local players?
 	var local_players = []
@@ -412,6 +424,7 @@ func get_local_players() -> Array:
 			print("    ", ap.nickname)
 	return local_players
 
+
 func announce_local_players():
 	if not get_tree().has_network_peer():
 		return
@@ -419,7 +432,7 @@ func announce_local_players():
 
 
 func announce_players(players: Array, peer_id = null) -> void:
-	var announced_players = []
+	var announced_players := []
 	for ap in players:
 		var msg := EnterLobby.new()
 		msg.nickname = ap.nickname
@@ -429,6 +442,8 @@ func announce_players(players: Array, peer_id = null) -> void:
 		msg.color = ap.color
 		msg.second_color = ap.second_color
 		announced_players.append(msg.to_array())
+		if get_tree().is_network_server():
+			assert(msg.in_game_uid)
 	print("Announcing players to the other peers: ", announced_players)
 	if peer_id == null:
 		rpc("recv_announced_players", announced_players)

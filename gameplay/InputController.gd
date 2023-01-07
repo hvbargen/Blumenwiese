@@ -38,19 +38,24 @@ func initialize_dummy(a_type = KEYBOARD) -> void:
 	device_name = "Dummy-" + type
 	in_game_uid = "dummy" + type
 
+
 func set_in_game_uid(new_in_game_uid: String):
 	if enabled:
 		disable()
 	in_game_uid = new_in_game_uid
-	set_enable(true)
-		
+	if type != REMOTE:
+		set_enable(true)
+
+
 func disable():
 	if in_game_uid.empty():
 		return
-	for action in actions:
-		var action_name := "%s#%s" % [action, in_game_uid]
-		if InputMap.has_action(action_name):
-			InputMap.erase_action(action_name)
+	if enabled:
+		enabled = false
+		for action in actions:
+			var action_name := "%s#%s" % [action, in_game_uid]
+			if InputMap.has_action(action_name):
+				InputMap.erase_action(action_name)
 
 func enable_for_ui(on: bool = true):
 	print("Controller ", device_name, " enable_for_ui", on)
@@ -84,6 +89,7 @@ func set_enable(on: bool = true):
 	if on and in_game_uid.empty():
 		printerr("Cannot enable controller, because in_game_uid is not yet set.")
 		return
+	print("Enabling controller %s for player %s" % [device_name, in_game_uid])
 	enabled = on
 	if not on:
 		return

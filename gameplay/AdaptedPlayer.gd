@@ -24,5 +24,6 @@ func dump() -> void:
 
 
 func set_in_game_uid(new_in_game_uid: String) -> void:
+	print("Setting in_game_uid for %s to %s" % [nickname, new_in_game_uid])
 	in_game_uid = new_in_game_uid
 	controller.set_in_game_uid (in_game_uid)

@@ -15,13 +15,15 @@ var in_game_uids := {}
 # Find an unused in_game_uid and assign it to the global_id
 func _assign_in_game_uid(global_id: String) -> String:
 	if in_game_uids.has(global_id):
-		# Reuse it
+		print("Reusing in_game_uid %s for global_id %s" % [in_game_uids[global_id], global_id])
 		return in_game_uids[global_id]
 	max_in_game_uid += 1
 	var uid := "%s" % max_in_game_uid
-	while in_game_uids.has(uid):
+	while in_game_uids.values().has(uid):
 		max_in_game_uid += 1
 		uid = "%s" % max_in_game_uid
+	in_game_uids[global_id] = uid
+	print("Assigned in_game_uid %s for global_id %s" % [uid, global_id])
 	return uid
 
 
@@ -31,6 +33,7 @@ remote func assign_in_game_uid(global_id: String) -> void:
 
 
 remote func on_server_assigned_in_game_uid(global_id: String, uid: String) -> void:
+	print("Server assigned in_game_uid %s to global_id %s" % [uid, global_id])
 	in_game_uids[global_id] = uid
 	connected[global_id].in_game_uid = uid
 
