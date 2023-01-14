@@ -27,12 +27,12 @@ func initialize_from_event(event: InputEvent) -> void:
 		type = GAMEPAD
 		device = event.device
 		device_name = Input.get_joy_name(event.device)
-		LocalControllers.register(self)
+		controller_id = LocalControllers.register(type, device)
 	elif event is InputEventKey:
 		type = KEYBOARD
 		device = event.device
 		device_name = KEYBOARD
-		LocalControllers.register(self)
+		controller_id = LocalControllers.register(type, device)
 	else:
 		push_error("Cannot use input event for controller initialization: %s" % event)
 		
@@ -42,7 +42,7 @@ func initialize_dummy(a_type = KEYBOARD) -> void:
 	device = 0
 	device_name = "Dummy-" + type
 	set_ig_peer_id(0)
-	LocalControllers.register(self)
+	controller_id = LocalControllers.register(type, device)
 
 
 func disable():

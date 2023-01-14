@@ -392,18 +392,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 414.0
-margin_top = 228.0
-margin_right = 722.0
-margin_bottom = 640.0
+margin_left = 422.0
+margin_top = 236.0
+margin_right = 730.0
+margin_bottom = 648.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 732.0
-margin_top = 228.0
-margin_right = 1040.0
-margin_bottom = 640.0
+margin_left = 740.0
+margin_top = 236.0
+margin_right = 1048.0
+margin_bottom = 648.0
 edit_alpha = false
 presets_visible = false
 

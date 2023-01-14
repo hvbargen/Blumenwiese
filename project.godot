@@ -35,6 +35,11 @@ _global_script_classes=[ {
 "path": "res://network/messages/input_state.gd"
 }, {
 "base": "Reference",
+"class": "IntRegistry",
+"language": "GDScript",
+"path": "res://int_registry.gd"
+}, {
+"base": "Reference",
 "class": "Message",
 "language": "GDScript",
 "path": "res://network/messages/message.gd"
@@ -50,6 +55,7 @@ _global_script_class_icons={
 "Gardener": "",
 "InputController": "",
 "InputState": "",
+"IntRegistry": "",
 "Message": "",
 "PlayerProfile": ""
 }

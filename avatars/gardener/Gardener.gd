@@ -253,9 +253,6 @@ func publish_input(state: InputState) -> void:
 		print("No controller, so no input")
 		return
 	var ig_player_id := controller.ig_player_id
-	if not ig_player_id:
-		print("Cannot publish input for %s, because ig_player_id is not yet set." % [nickname])
-		return
 	if not get_tree().has_network_peer():
 		return
 	_packet_counter += 1
@@ -342,3 +339,7 @@ func _accept_remote_input(packet_no: int, state: Array):
 	_packet_counter = packet_no
 	input_state.init_from_array(state)
 	_last_input_state = input_state
+
+
+func get_ig_player_id() -> int:
+	return controller.ig_player_id

@@ -16,6 +16,7 @@ const SINK_SPEED = 0.1
 
 const Logger = preload("res://util/Logger.gd")
 var logger: Logger
+var owned_by: int = -1
 
 func _init():
 	._init()
@@ -60,12 +61,23 @@ func _process(delta):
 			state = State.SUNKEN
 			queue_free()
 
-func initialize(position: Vector3):
+
+func initialize(position: Vector3, owned_by: int):
 	self.translate(position)
+	self.owned_by = owned_by
+
 
 func _on_Seed_body_entered(body):
 	logger.debug("Collision detected with %s", body.name)
-	sleeping = true
-	state = State.SINKING
-	start_y = transform.origin.y
-	logger.debug("Start sinking at %s", transform.origin)
+	var gardener = body as Gardener
+	if gardener is Gardener:
+		if gardener.get_ig_player_id() == owned_by:
+			print("Ignoring collision with owner.")
+			return
+		else:
+			print("Seed hit another player: " + body.name)
+	else:
+		sleeping = true
+		state = State.SINKING
+		start_y = transform.origin.y
+		logger.debug("Start sinking at %s", transform.origin)

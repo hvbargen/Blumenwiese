@@ -54,10 +54,7 @@ for the players on this peer have to change as well.
 
 var connected: Dictionary = {} # of global_id -> AdaptedPlayer
 
-var _peer_id_to_ig_peer_id := {} # of peer_id -> ig_peer_id
-var _ig_peer_id_to_peer_id := {} # of ig_peer_id -> peer_id
-
-var _max_ig_peer_id := 0 # The actual values start at 1 for a network game
+var _peers := IntRegistry.new()
 
 var _wait_for_peer_id := false
 
@@ -72,16 +69,14 @@ var network_state = NetworkState.LOCAL
 func _init():
 	._init()
 	network_state = NetworkState.LOCAL
-	own_ig_peer_id = 1
 	_init_peer_ids_for_local_game()
 
 	
 func _init_peer_ids_for_local_game():
 	# Init peer_id mappings for local game
-	_peer_id_to_ig_peer_id.clear()
-	_ig_peer_id_to_peer_id.clear()
-	_peer_id_to_ig_peer_id[1] = 1
-	_ig_peer_id_to_peer_id[1] = 1
+	_peers.clear()
+	own_peer_id = 1
+	own_ig_peer_id = _peers.register(own_peer_id)
 
 
 func _init_peer_ids_for_server_game():
@@ -112,8 +107,6 @@ func init_local():
 	leave_network()
 	network_state = NetworkState.LOCAL
 	var old_ig_peer_id := own_ig_peer_id
-	own_peer_id = 1
-	own_ig_peer_id = 1
 	_init_peer_ids_for_local_game()
 	if old_ig_peer_id != own_ig_peer_id:
 		GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
@@ -132,14 +125,11 @@ func init_server(host: String, port: int, max_players: int):
 		get_tree().network_peer = peer
 		own_peer_id = get_tree().get_network_unique_id()
 		assert(own_peer_id == 1)
-		own_ig_peer_id = 1
 		_init_peer_ids_for_server_game()
 		if old_ig_peer_id != own_ig_peer_id:
 			GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
 	else:
 		network_state = NetworkState.LOCAL
-		own_peer_id = 1
-		own_ig_peer_id = 1
 		_init_peer_ids_for_local_game()
 		if old_ig_peer_id != own_ig_peer_id:
 			GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
@@ -155,12 +145,8 @@ func init_client(server_host: String, server_port: int):
 	get_tree().network_peer = peer
 	own_peer_id = get_tree().get_network_unique_id()
 	var old_ig_peer_id = own_ig_peer_id
-	own_ig_peer_id = 0
-	# Adjust the two peer_id dicts
-	_peer_id_to_ig_peer_id.clear()
-	_ig_peer_id_to_peer_id.clear()
-	_peer_id_to_ig_peer_id[own_peer_id] = own_ig_peer_id
-	_ig_peer_id_to_peer_id[own_ig_peer_id] = own_peer_id
+	_peers.clear()
+	own_ig_peer_id = _peers.register(own_peer_id)
 	GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
 
 
@@ -169,9 +155,7 @@ func on_server_disconnected():
 	kick_remote_players()
 	network_state = NetworkState.LOCAL
 	get_tree().network_peer = null
-	own_peer_id = 1
 	var old_ig_peer_id = own_ig_peer_id
-	own_ig_peer_id = 1
 	_init_peer_ids_for_local_game()
 	GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
 	
@@ -192,13 +176,10 @@ func _server_assigned_ig_peer_id(new_ig_peer_id: int) -> void:
 	assert(network_state == NetworkState.UNCONNECTED_CLIENT)
 	_wait_for_peer_id = false
 	var old_ig_peer_id := own_ig_peer_id
-	var peer_id := get_tree().get_network_unique_id()
-	_peer_id_to_ig_peer_id.clear()
-	_ig_peer_id_to_peer_id.clear()
-	_peer_id_to_ig_peer_id[peer_id] = new_ig_peer_id
-	_ig_peer_id_to_peer_id[new_ig_peer_id] = peer_id
-	network_state = NetworkState.CLIENT
+	_peers.clear()
+	_peers.overrule(own_peer_id, new_ig_peer_id)
 	own_ig_peer_id = new_ig_peer_id
+	network_state = NetworkState.CLIENT
 	GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
 		
 	# We should now tell the server about our players
@@ -212,8 +193,6 @@ func on_connection_failed():
 	get_tree().network_peer = null
 	network_state = NetworkState.LOCAL
 	var old_ig_peer_id = own_ig_peer_id
-	own_peer_id = 1
-	own_ig_peer_id = 1
 	_init_peer_ids_for_local_game()
 	_wait_for_peer_id = false
 	GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
@@ -227,8 +206,6 @@ func leave_network():
 		get_tree().network_peer = null
 		network_state = NetworkState.LOCAL
 		var old_ig_peer_id = own_ig_peer_id
-		own_peer_id = 1
-		own_ig_peer_id = 1
 		_init_peer_ids_for_local_game()
 		_wait_for_peer_id = false
 		GameEvents.emit_signal("ig_peer_id_changed", old_ig_peer_id, own_ig_peer_id)
@@ -250,26 +227,13 @@ remote func recv_peer_registered(peer_id: int, ig_peer_id: int):
 		_server_assigned_ig_peer_id(ig_peer_id)
 	else:
 		# Den Zusammenhang zur Kenntnis nehmen
-		var existing = _peer_id_to_ig_peer_id.get(peer_id)
-		if existing is int:
-			_peer_id_to_ig_peer_id.erase(peer_id)
-			_ig_peer_id_to_peer_id.erase(existing)
-		_peer_id_to_ig_peer_id[peer_id] = ig_peer_id
-		_ig_peer_id_to_peer_id[ig_peer_id] = peer_id
+		_peers.overrule(peer_id, ig_peer_id)
 
 	
 func _assign_ig_peer_id(peer_id: int) -> int:
-	var ig_peer_id = _peer_id_to_ig_peer_id.get(peer_id)
-	if ig_peer_id is int:
-		print("Reusing ig_peer_id %s for peer_id %s" % [ig_peer_id, peer_id])
-		return ig_peer_id
-	else:
-		_max_ig_peer_id += 1
-		ig_peer_id = _max_ig_peer_id
-		_peer_id_to_ig_peer_id[peer_id] = ig_peer_id
-		_ig_peer_id_to_peer_id[ig_peer_id] = peer_id
-		print("Assigned ig_peer_id %s to peer_id %s" % [ig_peer_id, peer_id])
-		return ig_peer_id
+	var ig_peer_id = _peers.register(peer_id)
+	print("Assigned ig_peer_id %s to peer_id %s" % [ig_peer_id, peer_id])
+	return ig_peer_id
 
 
 # Find an unused ig_player_id and assign it to the global_id
@@ -323,7 +287,7 @@ func leave(global_id: String) -> void:
 
 func remove_peer(peer_id) -> void:
 	print("Removing peer %s" % peer_id)
-	var ig_peer_id = _peer_id_to_ig_peer_id[peer_id]
+	var ig_peer_id = _peers.unregister(peer_id)
 	var leaving := []
 	for global_id in connected.keys():
 		var ap := connected[global_id] as AdaptedPlayer

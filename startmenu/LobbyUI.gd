@@ -204,6 +204,9 @@ func _on_DummyPlayer_long_pressed(global_id):
 func _on_DummyPlayer_clicked(global_id):
 	print("on_Dummy_Player_clicked")
 	var player_profile = find_local_profile(global_id)
+	if Lobby.network_state == Lobby.NetworkState.UNCONNECTED_CLIENT:
+		print("Cannot enter lobby right now")
+		return
 	join_party(player_profile)
 
 
@@ -224,6 +227,7 @@ func join_party(player_profile: PlayerProfile):
 	controller.type = current_input_controller.type
 	controller.device = current_input_controller.device
 	controller.device_name = current_input_controller.device_name
+	controller.controller_id = current_input_controller.controller_id
 	var _result = GameEvents.connect("player_entered_lobby", self, "player_added", [], CONNECT_ONESHOT)
 	var ig_peer_id := Lobby.get_own_ig_peer_id()
 	controller.set_ig_peer_id(ig_peer_id)
@@ -273,7 +277,7 @@ func player_added(ap: AdaptedPlayer):
 	#vp.add_child(camera)
 	print("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
-	podest.get_node("LblController").text = "%s %s#%d" % [ap.ig_player_id, ap.controller.device_name, ap.controller.device + 1]
+	podest.get_node("LblController").text = "%s %s#%d" % [ap.get_ig_player_id(), ap.controller.device_name, ap.controller.device + 1]
 	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
 	vpc.add_child(lbl_hint)
 	var anim = vpc_template.get_node("AnimationPlayer").duplicate()
@@ -376,8 +380,8 @@ func announce_players(players: Array, peer_id = null) -> void:
 		var msg := EnterLobby.new()
 		msg.nickname = ap.nickname
 		msg.global_id = ap.global_id
-		msg.ig_player_id = ap.ig_player_id
-		msg.peer_id = ap.peer_id
+		msg.ig_player_id = ap.get_ig_player_id()
+		msg.ig_peer_id = ap.ig_peer_id
 		msg.color = ap.color
 		msg.second_color = ap.second_color
 		announced_players.append(msg.to_array())

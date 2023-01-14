@@ -4,7 +4,6 @@ class_name AdaptedPlayer
 
 export var color: Color
 export var second_color: Color
-export var ig_player_id: int
 export var ig_peer_id: int
 export var nickname: String
 var global_id: String
@@ -21,12 +20,15 @@ func _init(a_player_profile: PlayerProfile, a_ig_peer_id: int, a_controller: Inp
 	self.color = a_player_profile.fav_color1
 	self.second_color = a_player_profile.fav_color2
 	self.global_id = a_player_profile.global_id
-	#controller.ig_player_id = Lobby.get_ig_player_id(ig_peer_id, controller.controller_id)
 	controller.set_ig_peer_id(ig_peer_id)
 
 
+func get_ig_player_id() -> int:
+	return controller.ig_player_id
+
+
 func dump() -> void:
-	print("Player %s (controlled by '%s' from peer %s) = %s" % [ig_player_id, nickname, ig_peer_id, global_id])
+	print("Player %s (controlled by '%s' from peer %s) = %s" % [get_ig_player_id(), nickname, ig_peer_id, global_id])
 
 
 func change_colors(first: Color, second: Color) -> void:

@@ -37,12 +37,13 @@ func _ready():
 		init_dummy(2)
 
 
-func _on_Gardener_spawned_seed(who: Node):
+func _on_Gardener_spawned_seed(who: Gardener):
 	logger.debug("%s Spawning seed...", who.name)
 	var new_seed = seed_scene.instance()
 	var t = who.translation
 	t.y += 1.8
-	new_seed.initialize(t)
+	var ig_player_id := who.get_ig_player_id()
+	new_seed.initialize(t, ig_player_id)
 	add_child(new_seed)
 	new_seed.connect("seed_sunken", self, "_on_Seed_seed_sunken")
 
@@ -58,12 +59,14 @@ func _on_Seed_seed_sunken(where, color: Color):
 func spawn_player(ap: AdaptedPlayer) -> Gardener:
 	var spawn_position: Spatial = free_spawn_positions.pop_front()
 	var avatar := gardener_scene.instance() as Gardener
-	avatar.name = "Player#%s" % ap.ig_player_id
+	avatar.name = "Player#%s" % ap.get_ig_player_id()
 	avatar.setup_avatar(ap)
 	add_child(avatar)
 	avatar.transform = spawn_position.transform
 	avatar.direction_global = avatar.transform.basis.z
 	avatar.set_network_master(1)
+	
+	avatar.connect("spawned_seed", self, "_on_Gardener_spawned_seed")
 	
 	return avatar
 

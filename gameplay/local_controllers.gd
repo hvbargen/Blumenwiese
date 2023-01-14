@@ -7,11 +7,11 @@ extends Node
 var controllers: Array = []
 
 
-func register(controller: InputController) -> void:
+func register(type, device) -> int:
 	for i in range(len(controllers)):
-		var c := controllers[i] as InputController
-		if c.type == controller.type and c.device == controller.device:
-			controller.controller_id = i
+		var c := controllers[i] as Array
+		if c[0] == type  and c[1] == device:
+			return i
 	var id := len(controllers)
-	controller.controller_id = id
-	controllers.append(controller)
+	controllers.append([type, device])
+	return id
