@@ -62,9 +62,10 @@ config/icon="res://icon.png"
 
 [autoload]
 
-Players="*res://gameplay/Players.gd"
+Lobby="*res://gameplay/Lobby.gd"
 GameSettings="*res://gameplay/GameSettings.gd"
 GameEvents="*res://gameplay/GameEvents.gd"
+LocalControllers="*res://gameplay/local_controllers.gd"
 
 [display]
 

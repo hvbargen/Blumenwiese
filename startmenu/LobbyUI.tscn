@@ -56,7 +56,7 @@ tracks/0/keys = {
 "values": [ Color( 1, 1, 1, 1 ), Color( 0.027451, 0.882353, 0.141176, 1 ), Color( 0.0117647, 0.666667, 0.0980392, 1 ) ]
 }
 
-[node name="NetStartMenu" type="Control"]
+[node name="LobbyUI" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = ExtResource( 1 )
@@ -392,18 +392,18 @@ max_length = 20
 placeholder_text = "<Happy Loser>"
 
 [node name="FavCol1" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 406.0
-margin_top = 220.0
-margin_right = 714.0
-margin_bottom = 632.0
+margin_left = 414.0
+margin_top = 228.0
+margin_right = 722.0
+margin_bottom = 640.0
 edit_alpha = false
 presets_visible = false
 
 [node name="FavCol2" type="ColorPicker" parent="DlgCreateProfile/VBoxContainer/GridContainer"]
-margin_left = 724.0
-margin_top = 220.0
-margin_right = 1032.0
-margin_bottom = 632.0
+margin_left = 732.0
+margin_top = 228.0
+margin_right = 1040.0
+margin_bottom = 640.0
 edit_alpha = false
 presets_visible = false
 

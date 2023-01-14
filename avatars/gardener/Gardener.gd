@@ -103,24 +103,23 @@ func get_local_input() -> InputState:
 	state.jump_pressed = false
 	state.cancel_pressed = false
 	if controller is InputController and controller.enabled:
-		var in_game_uid := controller.in_game_uid
-		if Input.is_action_pressed("forward#%s" % in_game_uid):
-			state.forward = Input.get_action_strength("forward#%s" % in_game_uid)
-		if Input.is_action_pressed("turn_right#%s" % in_game_uid):
-			state.turn_right += Input.get_action_strength("turn_right#%s" % in_game_uid)
-		if Input.is_action_pressed("turn_left#%s" % in_game_uid):
-			state.turn_right -= Input.get_action_strength("turn_left#%s" % in_game_uid)
-		if Input.is_action_pressed("jump#%s" % in_game_uid):
+		var ig_player_id := controller.ig_player_id
+		if Input.is_action_pressed("forward#%s" % ig_player_id):
+			state.forward = Input.get_action_strength("forward#%s" % ig_player_id)
+		if Input.is_action_pressed("turn_right#%s" % ig_player_id):
+			state.turn_right += Input.get_action_strength("turn_right#%s" % ig_player_id)
+		if Input.is_action_pressed("turn_left#%s" % ig_player_id):
+			state.turn_right -= Input.get_action_strength("turn_left#%s" % ig_player_id)
+		if Input.is_action_pressed("jump#%s" % ig_player_id):
 			state.jump_pressed = true
-		if Input.is_action_just_pressed("jump#%s" % in_game_uid):
+		if Input.is_action_just_pressed("jump#%s" % ig_player_id):
 			state.ok_just_pressed = true
-		if Input.is_action_just_pressed("cancel#%s" % in_game_uid):
+		if Input.is_action_just_pressed("cancel#%s" % ig_player_id):
 			state.cancel_just_pressed = true
 		elif controller.type == InputController.REMOTE:
 			print("TODO apply input from remote controllers?")
-
-		if controller.in_game_uid != "":
-			publish_input(state)
+		
+		publish_input(state)
 
 		if state.cancel_just_pressed:
 			emit_signal("cancel_pressed")
@@ -200,7 +199,7 @@ func handle_input(delta: float, input_state: InputState) -> void:
 		if input_state.jump_pressed:
 			set_run_state(RunState.JUMPING)	
 			velocity_global.y = jump_accel * delta
-			emit_signal("jump", controller.in_game_uid)
+			emit_signal("jump", controller.ig_player_id)
 			emit_signal("spawned_seed", self)
 		else:
 			# Move the player
@@ -233,11 +232,12 @@ func set_nickname(new_nickname: String) -> void:
 
 
 func setup_avatar(ap: AdaptedPlayer) -> void:
+	print("Setup avatar ", ap.nickname)
 	set_nickname(ap.nickname)
 	set_shirt_color(ap.color)
 	set_shorts_color(ap.second_color)
 	controller = ap.controller
-	if controller.type != InputController.REMOTE and controller.in_game_uid:
+	if controller.type != InputController.REMOTE and controller.ig_player_id:
 		controller.enabled = true
 
 
@@ -252,28 +252,26 @@ func publish_input(state: InputState) -> void:
 	if controller == null:
 		print("No controller, so no input")
 		return
-	var in_game_uid := controller.in_game_uid
-	if not in_game_uid:
-		print("Cannot publish input for %s, because in_game_uid is not yet set." % [nickname])
+	var ig_player_id := controller.ig_player_id
+	if not ig_player_id:
+		print("Cannot publish input for %s, because ig_player_id is not yet set." % [nickname])
 		return
 	if not get_tree().has_network_peer():
 		return
 	_packet_counter += 1
 	if (_packet_counter > 9999):
 		_packet_counter = 1
-		print("Packet counter wrapped around for %s" % in_game_uid )
-	rpc_id(1, "upload_input_from_client", _packet_counter, in_game_uid, state.to_array())
+		print("Packet counter wrapped around for %s" % ig_player_id )
+	rpc_id(1, "upload_input_from_client", _packet_counter, ig_player_id, state.to_array())
 
 
 # Receive info about the input from a peer.
 # Send it to all the other clients
-mastersync func upload_input_from_client(packet_no: int, peer_in_game_uid: String, state: Array) -> void:
+mastersync func upload_input_from_client(packet_no: int, ig_player_id: int, state: Array) -> void:
 	var sender_id = get_tree().get_rpc_sender_id()
 
-	assert(controller.in_game_uid == peer_in_game_uid)
+	assert(controller.ig_player_id == ig_player_id)
 	# Sonst habe ich ein Verständnisproblem...
-
-	assert(peer_in_game_uid != "")
 
 	if sender_id > 1 and _packet_counter >= 0:
 		# Check for out-dated packets
@@ -296,50 +294,42 @@ mastersync func upload_input_from_client(packet_no: int, peer_in_game_uid: Strin
 	if sender_id > 1:
 		# TODO Validation?
 		pass
-		#print("TODO validation, as server received input for player %s from peer %s" % [peer_in_game_uid, sender_id])
+		#print("TODO validation, as server received input for player %s from peer %s" % [peer_ig_player_id, sender_id])
 		 
 	_accept_remote_input(packet_no, state)
 	
 	# Send the message to all the other peers.
-	rpc_unreliable("download_input_from_server", packet_no, peer_in_game_uid, state)
+	rpc_unreliable("download_input_from_server", packet_no, ig_player_id, state)
 
 
 # Receive info about the input from the server.
 # Simlar to the code on ther server side,
 # but without validation and publishing to the others.
-puppet func download_input_from_server(packet_no: int, peer_in_game_uid: String, state: Array) -> void:
+puppet func download_input_from_server(packet_no: int, ig_player_id: int, state: Array) -> void:
 	var sender_id = get_tree().get_rpc_sender_id()
 	assert(sender_id == 1)
-	
-	if not controller.in_game_uid:
-		print("%s cannot download input from server, because in_game_uid is not yet set." % [name])
-		return
-	
+		
 	if packet_no % 60 == 0:
-		print("Client received input for player %s from server" % [peer_in_game_uid])
+		print("Client received input for player %s from server" % [ig_player_id])
 
-	if controller.in_game_uid != peer_in_game_uid:
-		print("Own in_game_uid=%s, peer_in_game_uid received=%s" % [controller.in_game_uid, peer_in_game_uid])
-	assert(controller.in_game_uid == peer_in_game_uid)
+	assert(controller.ig_player_id == ig_player_id)
 	# Sonst habe ich ein Verständnisproblem...
 	
-	assert(controller.in_game_uid)
-
 	if _packet_counter >= 0:
 		# Check for out-dated packets
 		if packet_no > _packet_counter and packet_no < _packet_counter + 200:
 			if packet_no > _packet_counter + 1:
-				print("Received packet %d for player %s, %d packets got lost and will be ignored if arriving later." % [packet_no, controller.in_game_uid, packet_no - _packet_counter - 1])
+				print("Received packet %d for player %s, %d packets got lost and will be ignored if arriving later." % [packet_no, controller.ig_player_id, packet_no - _packet_counter - 1])
 			else:
 				pass # The perfect case
 		elif packet_no < 100 and _packet_counter > 9900:
 			# Wrap around
-			print("Received packet %d for player %s, old counter was %d, assuming that packets got lost and will be ignored if arriving later." % [packet_no, controller.in_game_uid, _packet_counter])
+			print("Received packet %d for player %s, old counter was %d, assuming that packets got lost and will be ignored if arriving later." % [packet_no, controller.ig_player_id, _packet_counter])
 		elif packet_no < _packet_counter + 200:
-			print("Ignoring out-dated packet %d for player %s" % [packet_no, controller.in_game_uid])
+			print("Ignoring out-dated packet %d for player %s" % [packet_no, controller.ig_player_id])
 			return
 		else:
-			push_error("Lost sync: Received packet %d for player %s current _packet_counter is %d" % [packet_no, controller.in_game_uid, _packet_counter])
+			push_error("Lost sync: Received packet %d for player %s current _packet_counter is %d" % [packet_no, controller.ig_player_id, _packet_counter])
 			printerr("@TODO What to do now?")
 			return
 
@@ -347,7 +337,7 @@ puppet func download_input_from_server(packet_no: int, peer_in_game_uid: String,
 
 
 func _accept_remote_input(packet_no: int, state: Array):
-	#print("Accepting remote input state for ", in_game_uid)
+	#print("Accepting remote input state for ", ig_player_id)
 	var input_state := InputState.new()
 	_packet_counter = packet_no
 	input_state.init_from_array(state)

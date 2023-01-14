@@ -58,7 +58,7 @@ func _on_Seed_seed_sunken(where, color: Color):
 func spawn_player(ap: AdaptedPlayer) -> Gardener:
 	var spawn_position: Spatial = free_spawn_positions.pop_front()
 	var avatar := gardener_scene.instance() as Gardener
-	avatar.name = "Player#%s" % ap.in_game_uid
+	avatar.name = "Player#%s" % ap.ig_player_id
 	avatar.setup_avatar(ap)
 	add_child(avatar)
 	avatar.transform = spawn_position.transform
@@ -101,4 +101,4 @@ func init_dummy(one_or_two: int):
 	var _remote_ap = spawn_player(AdaptedPlayer.new(nw, 0, controller))
 	
 	player1.get_node("3rdPerson/Camera").current = true
-	print("Using dummy with %s players." % one_or_two)
+	print("Using dummy with %s Lobby." % one_or_two)

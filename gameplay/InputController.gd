@@ -5,8 +5,10 @@ class_name InputController
 export var type: String
 export var device: int
 export var device_name: String = ""
-export var in_game_uid: String = ""
+export var ig_player_id: int
 export var enabled: bool = false setget set_enable
+
+var controller_id: int = -1 # means not yet registered
 
 const GAMEPAD := "Gamepad"
 const KEYBOARD := "Keyboard"
@@ -25,41 +27,35 @@ func initialize_from_event(event: InputEvent) -> void:
 		type = GAMEPAD
 		device = event.device
 		device_name = Input.get_joy_name(event.device)
+		LocalControllers.register(self)
 	elif event is InputEventKey:
 		type = KEYBOARD
 		device = event.device
 		device_name = KEYBOARD
+		LocalControllers.register(self)
 	else:
 		push_error("Cannot use input event for controller initialization: %s" % event)
+		
 
 func initialize_dummy(a_type = KEYBOARD) -> void:
 	type = a_type
 	device = 0
 	device_name = "Dummy-" + type
-	in_game_uid = "dummy" + type
-
-
-func set_in_game_uid(new_in_game_uid: String):
-	if enabled:
-		disable()
-	in_game_uid = new_in_game_uid
-	if type != REMOTE:
-		set_enable(true)
+	set_ig_peer_id(0)
+	LocalControllers.register(self)
 
 
 func disable():
-	if in_game_uid.empty():
-		return
 	if enabled:
 		enabled = false
 		for action in actions:
-			var action_name := "%s#%s" % [action, in_game_uid]
+			var action_name := "%s#%s" % [action, ig_player_id]
 			if InputMap.has_action(action_name):
 				InputMap.erase_action(action_name)
 
 
 func enable_for_ui(on: bool = true):
-	print("Controller ", device_name, " enable_for_ui", on)
+	print("Controller ", device_name, " enable_for_ui=", on)
 	if on:
 		for action in ui_disabled_actions.keys():
 			for event in ui_disabled_actions[action]:
@@ -85,12 +81,10 @@ func enable_for_ui(on: bool = true):
 					#print("removed %s event %s" % [action, event.as_text()])
 	
 func set_enable(on: bool = true):
+	print("Controller ", device_name, " enable => ", on)
 	if enabled:
 		disable()
-	if on and in_game_uid.empty():
-		printerr("Cannot enable controller, because in_game_uid is not yet set.")
-		return
-	print("Enabling controller %s for player %s" % [device_name, in_game_uid])
+	print("Enabling controller %s for player %s" % [device_name, ig_player_id])
 	enabled = on
 	if not on:
 		return
@@ -98,7 +92,7 @@ func set_enable(on: bool = true):
 	if type == GAMEPAD:
 
 		# turn_left
-		var action_name := "%s#%s" % ["turn_left", in_game_uid]
+		var action_name := "%s#%s" % ["turn_left", ig_player_id]
 		InputMap.add_action(action_name)
 		var dpad_event := InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_LEFT
@@ -112,7 +106,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, stick_event)
 
 		# turn_right
-		action_name = "%s#%s" % ["turn_right", in_game_uid]
+		action_name = "%s#%s" % ["turn_right", ig_player_id]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_RIGHT
@@ -126,7 +120,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, stick_event)
 
 		# forward
-		action_name = "%s#%s" % ["forward", in_game_uid]
+		action_name = "%s#%s" % ["forward", ig_player_id]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_DPAD_UP
@@ -140,7 +134,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, stick_event)
 
 		# jump
-		action_name = "%s#%s" % ["jump", in_game_uid]
+		action_name = "%s#%s" % ["jump", ig_player_id]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_SONY_X
@@ -149,7 +143,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, dpad_event)
 
 		# cancel
-		action_name = "%s#%s" % ["cancel", in_game_uid]
+		action_name = "%s#%s" % ["cancel", ig_player_id]
 		InputMap.add_action(action_name)
 		dpad_event = InputEventJoypadButton.new()
 		dpad_event.button_index = JOY_SONY_CIRCLE
@@ -160,7 +154,7 @@ func set_enable(on: bool = true):
 	if type == KEYBOARD:
 
 		# turn_left
-		var action_name := "%s#%s" % ["turn_left", in_game_uid]
+		var action_name := "%s#%s" % ["turn_left", ig_player_id]
 		InputMap.add_action(action_name)
 		var key_event := InputEventKey.new()
 		key_event.scancode = KEY_LEFT
@@ -168,7 +162,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, key_event)
 
 		# turn_right
-		action_name = "%s#%s" % ["turn_right", in_game_uid]
+		action_name = "%s#%s" % ["turn_right", ig_player_id]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_RIGHT
@@ -176,7 +170,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, key_event)
 
 		# forward
-		action_name = "%s#%s" % ["forward", in_game_uid]
+		action_name = "%s#%s" % ["forward", ig_player_id]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_UP
@@ -184,7 +178,7 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, key_event)
 
 		# jump
-		action_name = "%s#%s" % ["jump", in_game_uid]
+		action_name = "%s#%s" % ["jump", ig_player_id]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_SPACE
@@ -192,9 +186,18 @@ func set_enable(on: bool = true):
 		InputMap.action_add_event(action_name, key_event)
 
 		# cancel
-		action_name = "%s#%s" % ["cancel", in_game_uid]
+		action_name = "%s#%s" % ["cancel", ig_player_id]
 		InputMap.add_action(action_name)
 		key_event = InputEventKey.new()
 		key_event.scancode = KEY_ESCAPE
 		key_event.device = device
 		InputMap.action_add_event(action_name, key_event)
+		
+		
+func set_ig_peer_id(ig_peer_id: int):
+	print("Controller " + device_name + ": setting ig_peer_id = ", ig_peer_id)
+	if enabled:
+		disable()
+	ig_player_id = ig_peer_id * 10 + controller_id
+	if type != REMOTE:
+		set_enable(true)
