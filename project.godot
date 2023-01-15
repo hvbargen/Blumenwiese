@@ -68,6 +68,7 @@ config/icon="res://icon.png"
 
 [autoload]
 
+LogConf="*res://util/log_conf.gd"
 Lobby="*res://gameplay/Lobby.gd"
 GameSettings="*res://gameplay/GameSettings.gd"
 GameEvents="*res://gameplay/GameEvents.gd"

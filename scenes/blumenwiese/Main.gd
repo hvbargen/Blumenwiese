@@ -9,7 +9,7 @@ export (PackedScene) var seed_scene
 export (PackedScene) var flower_scene
 
 const Logger = preload("res://util/Logger.gd")
-var logger := Logger.new("Main", Logger.Level.DEBUG)
+var logger := Logger.new("Main")
 
 onready var spawn_positions := $SpawnPositions as Spatial
 

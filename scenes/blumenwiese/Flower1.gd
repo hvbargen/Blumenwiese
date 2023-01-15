@@ -11,7 +11,6 @@ export (PackedScene) var leaf_scene
 func _init():
 	._init()
 	logger = Logger.new("Flower1")
-	logger.level = Logger.Level.DEBUG
 	logger.name += (get_instance_id() as String)
 	
 func initialize(position: Vector3, blossom_color: Color):

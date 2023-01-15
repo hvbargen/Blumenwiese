@@ -24,9 +24,8 @@ export onready var player_node_template = $VBoxContainer/LocalProfiles/ScrollCon
 
 func _init():
 	._init()
-	logger = Logger.new("NetStartMenu")
-	logger.level = Logger.Level.DEBUG
-	logger.name += (get_instance_id() as String)
+	logger = Logger.new("LobbyUI")
+	# logger.name += (get_instance_id() as String)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -87,23 +86,23 @@ func _input(event: InputEvent):
 	$VBoxContainer/HBoxContainer/LblCurrentInputDevice.text = "%s#%d" % [current_input_controller.device_name, current_input_controller.device + 1]
 
 func on_connected_to_server():
-	print("Connected to server!")
+	logger.info("Connected to server!")
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connected"
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgreen
 	
 	# Tell everybody which players are connected locally here.
-	print("TODO Tell the others who is connected here...")
+	logger.warn("TODO Tell the others who is connected here...")
 	announce_local_players()
 
 func on_connection_failed():
-	print("Connection failed!")
+	logger.error("Connection failed!")
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connection failed"
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
 	$VBoxContainer/Network/BtnClient.pressed = false
 	get_tree().network_peer = null
 	
 func on_network_peer_connected(peer_id: int):
-	print("Peer connected: ", peer_id)
+	logger.info("Peer connected: %s", peer_id)
 	# Now we want the peer to tell us which players are local there.
 	# But probably it doesn't work this way.
 	# Instead, the peer tells everybody who is connected there
@@ -113,11 +112,11 @@ func on_network_peer_connected(peer_id: int):
 
 
 func on_network_peer_disconnected(id: int):
-	print("Peer disconnected: ", id)
+	logger.info("Peer disconnected: %s", id)
 
 
 func on_server_disconnected():
-	print("Server disconnected")
+	logger.error("Server disconnected")
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server disconnected."
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.red
 	$VBoxContainer/Network/BtnClient.pressed = false
@@ -125,22 +124,24 @@ func on_server_disconnected():
 
 
 func _on_PlayerName_text_changed(new_text: String):
-	print("Name changed: ", new_text)
+	logger.debug("Name changed: %s", new_text)
 
 
 func _on_BtnLocal_pressed():
+	logger.info("BtnLocal pressed.")
 	Lobby.init_local()
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "(Local Game)"
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgray
 
 
 func _on_BtnServer_pressed():
+	logger.info("BtnServer pressed.")
 	server_host = $VBoxContainer/Network/TxtHost.text
 	server_port = $VBoxContainer/Network/TxtPort.text as int
 	if server_host != "*":
-		print("TODO Check that host IP is valid.")
+		logger.warn("TODO Check that host IP is valid.")
 	var error = Lobby.init_server(server_host, server_port, MAX_PLAYERS)
-	print("TODO: Automatic saving of server host and port!")
+	logger.warn("TODO: Automatic saving of server host and port!")
 	if error == OK:
 		$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Server listening on port %s" % server_port
 		$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.darkgreen
@@ -151,9 +152,10 @@ func _on_BtnServer_pressed():
 
 
 func _on_BtnClient_pressed():
+	logger.info("BtnClient pressed.")
 	server_host = $VBoxContainer/Network/TxtHost.text
 	server_port = $VBoxContainer/Network/TxtPort.text as int
-	print("TODO: Automatic saving of server host and port!")
+	logger.warn("TODO: Automatic saving of server host and port!")
 	Lobby.init_client(server_host, server_port)
 	$VBoxContainer/NetworkInfo/ColorServerStatus/ServerStatus.text = "Connecting to %s:%s ..." % [server_host, server_port]
 	$VBoxContainer/NetworkInfo/ColorServerStatus.color = Color.orange
@@ -161,22 +163,23 @@ func _on_BtnClient_pressed():
 	
 
 func show_our_network_role():
-	print("Our network role is: Server? " + (get_tree().is_network_server() as String) + ", unique id=", get_tree().get_network_unique_id())
+	logger.debug("Our network role is: Server? %s, unique_id=%s", get_tree().is_network_server(), get_tree().get_network_unique_id())
 
 
 func _on_BtnAdd_pressed():
+	logger.info("BtnAdd pressed.")
 	# Create a new local profile.
 	$DlgCreateProfile.initialize(null)
 	$DlgCreateProfile.popup_centered()
 
 
 func _on_DlgCreateProfile_profile_created(player_profile: PlayerProfile):
-	print("New profile created: ", player_profile.nickname)
+	logger.info("New profile created: %s", player_profile.nickname)
 	show_local_profile(player_profile)
 
 
 func _on_DlgCreateProfile_profile_edited(player_profile: PlayerProfile):
-	print("Profile edited: ", player_profile.nickname)
+	logger.info("Profile edited: %s", player_profile.nickname)
 	for pn in $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles.get_children():
 		if pn.name.begins_with("Icon") and pn.global_id == player_profile.global_id:
 			update_local_profile_button(pn, player_profile)
@@ -190,22 +193,22 @@ func find_local_profile(global_id: String) -> PlayerProfile:
 
 
 func _on_DummyPlayer_long_released(global_id):
-	print("Button long released", global_id)
+	logger.debug("Button long released: %s", global_id)
 
 
 func _on_DummyPlayer_long_pressed(global_id):
 	var player_profile = find_local_profile(global_id)
-	print("Button long pressed", player_profile.nickname)
+	logger.debug("Button long pressed: %s", player_profile.nickname)
 	assert(player_profile in local_profiles)
 	$DlgCreateProfile.initialize(player_profile)
 	$DlgCreateProfile.popup_centered()
 
 
 func _on_DummyPlayer_clicked(global_id):
-	print("on_Dummy_Player_clicked")
+	logger.info("on_Dummy_Player_clicked")
 	var player_profile = find_local_profile(global_id)
 	if Lobby.network_state == Lobby.NetworkState.UNCONNECTED_CLIENT:
-		print("Cannot enter lobby right now")
+		logger.error("Cannot enter lobby right now")
 		return
 	join_party(player_profile)
 
@@ -275,7 +278,7 @@ func player_added(ap: AdaptedPlayer):
 	#camera.transform = cam_template.transform
 	#camera.name = "CamPodestScene#%d" % index
 	#vp.add_child(camera)
-	print("'Hello' from %s" % gardener.nickname)
+	logger.info("'Hello' from %s" % gardener.nickname)
 	gardener.get_node("AnimationPlayer").play("Emote1")
 	podest.get_node("LblController").text = "%s %s#%d" % [ap.get_ig_player_id(), ap.controller.device_name, ap.controller.device + 1]
 	var lbl_hint = vpc_template.get_node("LblHint").duplicate()
@@ -287,20 +290,20 @@ func player_added(ap: AdaptedPlayer):
 
 func on_connected_player_not_ready(gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer, first_time: bool = false):
 	if first_time:
-		print("Player is not yet ready: ", ap.nickname)
+		logger.info("Player is not yet ready: %s", ap.nickname)
 	else:
-		print("Player is no longer ready: ", ap.nickname)
+		logger.info("Player is no longer ready: %s", ap.nickname)
 	lbl_hint.text = "Press Jump\nwhen ready"
 	ap.controller.enable_for_ui(false)
 	gardener.connect("jump", self, "on_connected_player_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
 	gardener.connect("cancel_pressed", self, "on_connected_player_cancel", [ap], CONNECT_ONESHOT)
 	anim.play("PressOkGlow")
 	players_not_ready.append(ap.global_id)
-	print("Players not ready: ", players_not_ready)
+	logger.debug("Players not ready: %s", players_not_ready)
 
 
 func on_connected_player_cancel(ap: AdaptedPlayer):
-	print("Player cancelled: ", ap.nickname)
+	logger.info("Player cancelled: %s", ap.nickname)
 	ap.controller.enable_for_ui(true)
 	var container := $VBoxContainer/LocalProfiles/ScrollContainer/LocalProfiles
 	for btn in container.get_children():
@@ -310,20 +313,20 @@ func on_connected_player_cancel(ap: AdaptedPlayer):
 
 	
 func on_connected_player_ready(ig_player_id, gardener, anim: AnimationPlayer, lbl_hint: RichTextLabel, ap: AdaptedPlayer):
-	print("Player is ready: ", ap.nickname)
+	logger.info("Player is ready: %s", ap.nickname)
 	lbl_hint.text = "Ready"
 	gardener.connect("cancel_pressed", self, "on_connected_player_not_ready", [gardener, anim, lbl_hint, ap], CONNECT_ONESHOT)
 	anim.play("ReadyGlow")
-	print("Players not ready: ", players_not_ready)
+	logger.debug("Players not ready: %s", players_not_ready)
 	var i := players_not_ready.find(ap.global_id)
 	if i >= 0:
 		players_not_ready.remove(i)
 		if players_not_ready.empty():
 			start_game()
 		else:
-			print("Still waiting for:")
+			logger.debug("Still waiting for:")
 			for p in players_not_ready:
-				print("  %s" % p)
+				logger.debug("  %s", p)
 	else:
 		push_error("Tried to remove player %s (%s) from waiting list, but player is not on that list" % [ap.nickname, ap.global_id])
 
@@ -358,10 +361,10 @@ func start_game() -> void:
 	GameSettings.local_players = local_players
 	GameSettings.num_viewports = len(local_players)
 	GameSettings.single_player_mode = (not GameSettings.network and len(local_players) == 1)
-	print ("Starting game:")
-	print("  Single_player=", GameSettings.single_player_mode)
-	print("  Network type=", Lobby.network_state)
-	print("  # ViewPorts=", GameSettings.num_viewports)
+	logger.info("Starting game:")
+	logger.info("  Single_player=%s", GameSettings.single_player_mode)
+	logger.info("  Network type=%s", Lobby.network_state)
+	logger.info("  # ViewPorts=%s", GameSettings.num_viewports)
 
 	var screen = preload("res://Splitscreen.tscn")
 	if get_tree().change_scene_to(screen) != OK:
@@ -387,7 +390,7 @@ func announce_players(players: Array, peer_id = null) -> void:
 		announced_players.append(msg.to_array())
 		if get_tree().is_network_server():
 			assert(msg.ig_player_id)
-	print("Announcing players to the other peers: ", announced_players)
+	logger.info("Announcing players to the other peers: %s", announced_players)
 	if peer_id == null:
 		rpc("recv_announced_players", announced_players)
 	else:
@@ -419,7 +422,7 @@ remote func recv_announced_players(announced_players: Array):
 	#if peer_id == get_tree().get_network_unique_id():
 	#	print("Ignored RPC call from self: %s", "announce_players")
 	#	return
-	print("Players announced from peer #%d: %s" % [peer_id, len(announced_players)])
+	logger.info("Players announced from peer #%d: %s", peer_id, len(announced_players))
 	# Remove players that are still in our list but not no longer on the peer's list
 	var remote_global_ids := []
 	var previous_global_ids := []
@@ -439,7 +442,7 @@ remote func recv_announced_players(announced_players: Array):
 			Lobby.add(remote_ap)
 			player_added(remote_ap)
 		else:
-			print("TODO: Handle editing of remote players, eg by version numbering?")
+			logger.warn("TODO: Handle editing of remote players, eg by version numbering?")
 
 
 remotesync func assign_ig_player_ids(d: Dictionary):

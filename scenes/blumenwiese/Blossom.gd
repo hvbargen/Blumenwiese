@@ -8,7 +8,6 @@ var logger: Logger
 func _init():
 	._init()
 	logger = Logger.new("Blossom")
-	logger.level = Logger.Level.DEBUG
 	logger.name += (get_instance_id() as String)
 	
 # Called when the node enters the scene tree for the first time.

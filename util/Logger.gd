@@ -6,11 +6,13 @@ enum Level { DEBUG, INFO, WARN, ERROR, OFF }
 export var level = Level.WARN
 export var name: String
 
+
 func _init(logger_name: String, log_level=null):
 	self.name = logger_name
 	if log_level != null:
 		level = log_level
-	
+	else:
+		level = LogConf.get_level(logger_name)
 
 func debug(fmt: String, arg1=null, arg2=null, arg3=null, arg4=null, arg5=null):
 	print(_format(Level.DEBUG, fmt, arg1, arg2, arg3, arg4, arg5))
